@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchScanBySlug, isSupabaseConfigured } from "@/lib/supabase";
+import { fetchScanBySlug, fetchPreviousScan, isSupabaseConfigured } from "@/lib/supabase";
 
 export async function GET(
   _request: NextRequest,
@@ -27,5 +27,21 @@ export async function GET(
     );
   }
 
-  return NextResponse.json({ ...scan.results, slug: scan.slug });
+  // Fetch previous scan for score progression
+  let previousTiers: Record<string, string> | null = null;
+  let previousScannedAt: string | null = null;
+  if (scan.domain_id) {
+    const prevScan = await fetchPreviousScan(scan.domain_id, scan.id);
+    if (prevScan) {
+      previousTiers = prevScan.tier_summary;
+      previousScannedAt = prevScan.scanned_at;
+    }
+  }
+
+  return NextResponse.json({
+    ...scan.results,
+    slug: scan.slug,
+    previousTiers,
+    previousScannedAt,
+  });
 }

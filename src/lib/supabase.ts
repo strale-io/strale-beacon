@@ -219,6 +219,28 @@ export async function fetchScanBySlug(slug: string): Promise<DbScan | null> {
 }
 
 /**
+ * Fetch the previous scan for a domain (the scan before the current one).
+ * Returns null if no previous scan exists.
+ */
+export async function fetchPreviousScan(
+  domainId: string,
+  currentScanId: string
+): Promise<DbScan | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  const { data } = await supabase
+    .from("scans")
+    .select("*")
+    .eq("domain_id", domainId)
+    .neq("id", currentScanId)
+    .order("scanned_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  return (data as DbScan) || null;
+}
+
+/**
  * Subscribe an email for scan change notifications.
  */
 export async function subscribeEmail(

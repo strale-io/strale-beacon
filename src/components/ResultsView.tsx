@@ -12,6 +12,18 @@ import ActionPlan from "@/components/ActionPlan";
 import ShareBar from "@/components/ShareBar";
 import SubscribeForm from "@/components/SubscribeForm";
 import DownloadReport from "@/components/DownloadReport";
+import ScoreProgression from "@/components/ScoreProgression";
+
+function relativeTime(dateStr: string): string {
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(ms / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
+}
 
 function getCategorySummary(category: { tier: Tier; checks: { status: string; finding: string }[] }): string {
   const passCount = category.checks.filter((c) => c.status === "pass").length;
@@ -37,6 +49,9 @@ export default function ResultsView() {
   const [notFound, setNotFound] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [rescanning, setRescanning] = useState(false);
+  const [previousTiers, setPreviousTiers] = useState<Record<string, string> | null>(null);
+  const [previousScannedAt, setPreviousScannedAt] = useState<string | null>(null);
+  const [staleBannerDismissed, setStaleBannerDismissed] = useState(false);
 
   const handleRescan = async () => {
     if (!result || rescanning) return;
@@ -68,6 +83,8 @@ export default function ResultsView() {
         if (response.ok) {
           const data = await response.json();
           setResult(data as ScanResult);
+          if (data.previousTiers) setPreviousTiers(data.previousTiers);
+          if (data.previousScannedAt) setPreviousScannedAt(data.previousScannedAt);
         } else if (response.status === 404) {
           setNotFound(true);
         }
@@ -170,6 +187,35 @@ export default function ResultsView() {
           </p>
         </div>
 
+        {/* Staleness banner — shown when results are older than 15 minutes */}
+        {!staleBannerDismissed && (() => {
+          const ageMs = Date.now() - new Date(result.scanned_at).getTime();
+          if (ageMs < 15 * 60 * 1000) return null;
+          return (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-tier-yellow-light border border-yellow-200 flex items-center justify-between gap-3">
+              <p className="text-sm text-tier-yellow-text">
+                These results are from {relativeTime(result.scanned_at)}. They may not reflect recent changes.{" "}
+                <button
+                  onClick={handleRescan}
+                  disabled={rescanning}
+                  className="font-medium underline hover:no-underline"
+                >
+                  {rescanning ? "Rescanning…" : "Rescan now"}
+                </button>
+              </p>
+              <button
+                onClick={() => setStaleBannerDismissed(true)}
+                className="flex-shrink-0 text-tier-yellow-text hover:text-foreground"
+                aria-label="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          );
+        })()}
+
         <div className="flex justify-center mb-6">
           <div className="block sm:hidden">
             <RadarChart
@@ -191,10 +237,18 @@ export default function ResultsView() {
           </div>
         </div>
 
-        <p className="text-center text-lg font-medium text-text-secondary mb-10">
+        <p className="text-center text-lg font-medium text-text-secondary mb-6">
           <span className="text-foreground font-bold">{greenCount} of {totalCategories}</span>
           {" areas agent-ready"}
         </p>
+
+        {previousTiers && previousScannedAt && (
+          <ScoreProgression
+            categories={result.categories}
+            previousTiers={previousTiers}
+            previousScannedAt={previousScannedAt}
+          />
+        )}
 
         <div className="space-y-2 mb-12">
           {result.categories.map((cat) => (

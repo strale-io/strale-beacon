@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { fetchScanBySlug, isSupabaseConfigured } from "@/lib/supabase";
+import { fetchScanBySlug, fetchPreviousScan, isSupabaseConfigured } from "@/lib/supabase";
 import BeaconReport from "@/lib/pdf/BeaconReport";
 import { createElement } from "react";
+import type { Tier } from "@/lib/checks/types";
 
 export async function GET(
   _request: NextRequest,
@@ -24,9 +25,24 @@ export async function GET(
     return NextResponse.json({ error: "Scan not found" }, { status: 404 });
   }
 
+  // Fetch previous scan for score progression
+  let previousTiers: Record<string, Tier> | undefined;
+  let previousScannedAt: string | undefined;
+  if (scan.domain_id) {
+    const prevScan = await fetchPreviousScan(scan.domain_id, scan.id);
+    if (prevScan) {
+      previousTiers = prevScan.tier_summary as Record<string, Tier>;
+      previousScannedAt = prevScan.scanned_at;
+    }
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const element = createElement(BeaconReport, { result: scan.results }) as any;
+    const element = createElement(BeaconReport, {
+      result: scan.results,
+      previousTiers,
+      previousScannedAt,
+    }) as any;
     const buffer = await renderToBuffer(element);
 
     const domain = scan.results.domain || slug;

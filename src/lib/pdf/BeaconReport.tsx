@@ -5,7 +5,7 @@ import {
   View,
   StyleSheet,
 } from "@react-pdf/renderer";
-import type { ScanResult, CheckResult, CategoryResult } from "../checks/types";
+import type { ScanResult, CheckResult, CategoryResult, Tier } from "../checks/types";
 import { generateNarrative } from "./narrative";
 import PdfRadarChart from "./radar";
 
@@ -149,9 +149,14 @@ function getCategorySummaryText(cat: CategoryResult): string {
 
 interface BeaconReportProps {
   result: ScanResult;
+  previousTiers?: Record<string, Tier>;
+  previousScannedAt?: string;
 }
 
-export default function BeaconReport({ result }: BeaconReportProps) {
+const TIER_LABELS: Record<Tier, string> = { green: "Ready", yellow: "Partial", red: "Not Ready" };
+const TIER_ORDER: Record<Tier, number> = { red: 0, yellow: 1, green: 2 };
+
+export default function BeaconReport({ result, previousTiers, previousScannedAt }: BeaconReportProps) {
   const greenCount = result.categories.filter((c) => c.tier === "green").length;
   const dateStr = new Date(result.scanned_at).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
@@ -231,6 +236,41 @@ export default function BeaconReport({ result }: BeaconReportProps) {
             </View>
           ))}
         </View>
+
+        {/* Score progression — if previous scan exists */}
+        {previousTiers && previousScannedAt && (() => {
+          const prevDate = new Date(previousScannedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+          const prevGreen = Object.values(previousTiers).filter((t) => t === "green").length;
+          const improvements: string[] = [];
+          const regressions: string[] = [];
+          for (const cat of result.categories) {
+            const prev = previousTiers[cat.category_id] as Tier | undefined;
+            if (!prev || prev === cat.tier) continue;
+            const label = `${cat.label} (${TIER_LABELS[prev]} → ${TIER_LABELS[cat.tier]})`;
+            if (TIER_ORDER[cat.tier] > TIER_ORDER[prev]) improvements.push(label);
+            else regressions.push(label);
+          }
+          return (
+            <View style={{ marginTop: 14, paddingTop: 10, borderTopWidth: 0.5, borderTopColor: COLORS.border }}>
+              <Text style={{ fontSize: 9, color: COLORS.muted, marginBottom: 4 }}>
+                Previous scan: {prevDate} · {prevGreen}/{result.categories.length} Ready → {greenCount}/{result.categories.length} Ready
+              </Text>
+              {improvements.length > 0 && (
+                <Text style={{ fontSize: 9, color: COLORS.greenText }}>
+                  {improvements.map((i) => `↑ ${i}`).join("  ·  ")}
+                </Text>
+              )}
+              {regressions.length > 0 && (
+                <Text style={{ fontSize: 9, color: COLORS.redText }}>
+                  {regressions.map((r) => `↓ ${r}`).join("  ·  ")}
+                </Text>
+              )}
+              {improvements.length === 0 && regressions.length === 0 && (
+                <Text style={{ fontSize: 9, color: COLORS.muted }}>No tier changes since last scan</Text>
+              )}
+            </View>
+          );
+        })()}
 
         <PageFooter domain={result.domain} date={dateStr} pageNum={nextPage()} />
       </Page>

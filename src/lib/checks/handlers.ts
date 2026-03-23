@@ -10,6 +10,7 @@
 
 import type { CheckDefinition, CheckResult, ScanContext, Probe, Confidence } from "./types";
 import { beaconFetch, type FetchResult } from "./fetch";
+import { extractLinksFromJson, linksByCategory, type FoundLink } from "./json-links";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -431,17 +432,29 @@ export async function checkMachinePricing(ctx: ScanContext, check: CheckDefiniti
     if (hpResult) probes.push(toProbe(hpResult));
     const html = ctx.homepageHtml || "";
 
-    // For API domains, also check cross-domain pricing links
-    if (ctx.domainType === "api") {
-      for (const link of ctx.crossDomainLinks) {
-        if (/pric|plan|tier/i.test(link.href) || /pric|plan|tier/i.test(link.label)) {
-          const result = await beaconFetch(link.href);
-          probes.push(toProbe(result));
-          if (result.ok && /"price"|"priceCurrency"|"offers"/i.test(result.body)) {
-            return makeResult(check, "warn", `Pricing data found via cross-domain link at ${link.href} (linked from ${link.source}).`, { probes, confidence: "medium" });
-          }
+    // Check cross-domain pricing links and nested JSON pricing URLs
+    for (const link of ctx.crossDomainLinks) {
+      if (/pric|plan|tier/i.test(link.href) || /pric|plan|tier/i.test(link.label)) {
+        const result = await beaconFetch(link.href);
+        probes.push(toProbe(result));
+        if (result.ok && /"price"|"priceCurrency"|"offers"/i.test(result.body)) {
+          return makeResult(check, "warn", `Pricing data found via cross-domain link at ${link.href} (linked from ${link.source}).`, { probes, confidence: "medium" });
         }
       }
+    }
+    for (const resp of ctx.apiResponses) {
+      if (!resp.isJson || !resp.body) continue;
+      try {
+        const json = JSON.parse(resp.body);
+        const pricingLinks = linksByCategory(extractLinksFromJson(json), "pricing");
+        for (const pl of pricingLinks) {
+          const result = await beaconFetch(pl.url);
+          probes.push(toProbe(result));
+          if (result.ok) {
+            return makeResult(check, "warn", `Pricing link found via JSON path "${pl.path}" in ${resp.url}, pointing to ${pl.url}.`, { probes, confidence: "medium" });
+          }
+        }
+      } catch { /* ignore */ }
     }
 
     if (/"price"|"priceCurrency"|"offers"/i.test(html)) {
@@ -755,15 +768,29 @@ export async function checkChangelogStatus(ctx: ScanContext, check: CheckDefinit
   const statusPageLink = html.match(/href=["']([^"']*(?:statuspage\.io|status\.[^"']+|uptime[^"']*))["']/i);
   if (statusPageLink) found.push(`external status: ${statusPageLink[1]}`);
 
-  // For API domains, check cross-domain changelog links
-  if (ctx.domainType === "api") {
-    for (const link of ctx.crossDomainLinks) {
-      if (/changelog|status|release|updates/i.test(link.href) || /changelog|status|release|updates/i.test(link.label)) {
-        const result = await beaconFetch(link.href);
-        probes.push(toProbe(result));
-        if (result.ok) found.push(`${link.href} (cross-domain from ${link.source})`);
-      }
+  // Check cross-domain links and nested JSON for changelog/status links
+  for (const link of ctx.crossDomainLinks) {
+    if (/changelog|status|release|updates/i.test(link.href) || /changelog|status|release|updates/i.test(link.label)) {
+      const result = await beaconFetch(link.href);
+      probes.push(toProbe(result));
+      if (result.ok) found.push(`${link.href} (cross-domain from ${link.source})`);
     }
+  }
+
+  // Also check nested JSON API responses for changelog/status URLs
+  for (const resp of ctx.apiResponses) {
+    if (!resp.isJson || !resp.body) continue;
+    try {
+      const json = JSON.parse(resp.body);
+      const allLinks = extractLinksFromJson(json);
+      const changelogLinks = linksByCategory(allLinks, "changelog");
+      const statusLinks = linksByCategory(allLinks, "status");
+      for (const jl of [...changelogLinks, ...statusLinks]) {
+        const result = await beaconFetch(jl.url);
+        probes.push(toProbe(result));
+        if (result.ok) found.push(`${jl.url} (via JSON path "${jl.path}" in ${resp.url})`);
+      }
+    } catch { /* ignore */ }
   }
 
   if (found.length >= 2) {
@@ -912,12 +939,14 @@ export async function checkFirstContact(ctx: ScanContext, check: CheckDefinition
 
   if (jsonResponses.length > 0) {
     const best = jsonResponses[0];
-    let hasDocLinks = false;
+    let foundLinks: FoundLink[] = [];
     let responsePreview = "";
     try {
       const json = JSON.parse(best.body || "");
       responsePreview = JSON.stringify(json, null, 2).substring(0, 300);
-      hasDocLinks = /doc|link|href|url/i.test(JSON.stringify(json));
+
+      // Recursively extract all links from nested JSON
+      foundLinks = extractLinksFromJson(json);
 
       // For API domains, extract cross-domain links
       if (ctx.domainType === "api") {
@@ -925,10 +954,18 @@ export async function checkFirstContact(ctx: ScanContext, check: CheckDefinition
       }
     } catch { /* ignore */ }
 
-    if (hasDocLinks) {
-      return makeResult(check, "pass", `First contact at ${best.url} returns structured JSON (HTTP ${best.status}) with documentation links.`, { probes, details: { status: best.status, responsePreview } });
+    const docLinks = linksByCategory(foundLinks, "documentation");
+    const allCategorized = foundLinks.filter((l) => l.category !== "other");
+
+    if (docLinks.length > 0) {
+      const docPaths = docLinks.map((l) => `${l.path} → ${l.url}`).join("; ");
+      return makeResult(check, "pass", `First contact at ${best.url} returns structured JSON (HTTP ${best.status}) with documentation links: ${docPaths}.`, { probes, details: { status: best.status, responsePreview, links: foundLinks } });
     }
-    return makeResult(check, "warn", `First contact at ${best.url} returns JSON (HTTP ${best.status}) but without documentation links for self-navigation. Response: ${responsePreview}...`, { probes, details: { status: best.status, responsePreview } });
+    if (allCategorized.length > 0) {
+      const linkSummary = allCategorized.map((l) => `${l.category}: ${l.url}`).join("; ");
+      return makeResult(check, "warn", `First contact at ${best.url} returns JSON (HTTP ${best.status}) with links (${linkSummary}) but no documentation links found.`, { probes, details: { status: best.status, responsePreview, links: foundLinks } });
+    }
+    return makeResult(check, "warn", `First contact at ${best.url} returns JSON (HTTP ${best.status}) but without navigation links. Response: ${responsePreview}...`, { probes, details: { status: best.status, responsePreview } });
   }
 
   if (timeouts.length === ctx.apiResponses.length) {
@@ -959,12 +996,25 @@ export async function checkDocNavigability(ctx: ScanContext, check: CheckDefinit
   const navDocPattern = /(?:documentation|api\s*docs|developer|api\s*reference)/i;
   const hasNavDocLink = navDocPattern.test(html);
 
-  // For API domains, also check JSON response for doc links
-  if (ctx.domainType === "api" && docLinks.length === 0) {
+  // For API domains, check nested JSON responses for doc links
+  if (docLinks.length === 0) {
+    // Check cross-domain links from context
     for (const link of ctx.crossDomainLinks) {
       if (/doc|api|developer|reference/i.test(link.href) || /doc|api|developer|reference/i.test(link.label)) {
-        docLinks.push(`${link.href} (via JSON link from ${link.source})`);
+        docLinks.push(`${link.href} (via cross-domain link from ${link.source})`);
       }
+    }
+
+    // Also recursively parse JSON API responses for nested doc links
+    for (const resp of ctx.apiResponses) {
+      if (!resp.isJson || !resp.body) continue;
+      try {
+        const json = JSON.parse(resp.body);
+        const jsonDocLinks = linksByCategory(extractLinksFromJson(json), "documentation");
+        for (const jl of jsonDocLinks) {
+          docLinks.push(`${jl.url} (via JSON path "${jl.path}" in ${resp.url})`);
+        }
+      } catch { /* ignore */ }
     }
   }
 
@@ -1038,6 +1088,23 @@ export async function checkSupportPaths(ctx: ScanContext, check: CheckDefinition
       signals.push("Webhook documentation found");
       break;
     }
+  }
+
+  // Check nested JSON API responses for support/status links
+  for (const resp of ctx.apiResponses) {
+    if (!resp.isJson || !resp.body) continue;
+    try {
+      const json = JSON.parse(resp.body);
+      const allLinks = extractLinksFromJson(json);
+      const supportLinks = linksByCategory(allLinks, "support");
+      const statusLinks = linksByCategory(allLinks, "status");
+      for (const sl of supportLinks) {
+        signals.push(`Support link via JSON "${sl.path}": ${sl.url}`);
+      }
+      for (const sl of statusLinks) {
+        signals.push(`Status link via JSON "${sl.path}": ${sl.url}`);
+      }
+    } catch { /* ignore */ }
   }
 
   if (signals.length >= 2) {
