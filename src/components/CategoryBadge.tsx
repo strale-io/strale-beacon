@@ -5,32 +5,16 @@ interface CategoryBadgeProps {
   question: string;
   tier: Tier;
   summary: string;
+  passCount: number;
+  totalChecks: number;
   expanded?: boolean;
   onClick?: () => void;
 }
 
-const TIER_CONFIG: Record<Tier, { label: string; bg: string; text: string; border: string; icon: string }> = {
-  green: {
-    label: "Ready",
-    bg: "bg-tier-green-light",
-    text: "text-tier-green-text",
-    border: "border-tier-green-border",
-    icon: "✓",
-  },
-  yellow: {
-    label: "Partial",
-    bg: "bg-tier-yellow-light",
-    text: "text-tier-yellow-text",
-    border: "border-tier-yellow-border",
-    icon: "◐",
-  },
-  red: {
-    label: "Not Ready",
-    bg: "bg-tier-red-light",
-    text: "text-tier-red-text",
-    border: "border-tier-red-border",
-    icon: "✗",
-  },
+const TIER_CONFIG: Record<Tier, { label: string; bg: string; text: string }> = {
+  green: { label: "Ready", bg: "bg-tier-green-light", text: "text-tier-green-text" },
+  yellow: { label: "Partial", bg: "bg-tier-yellow-light", text: "text-tier-yellow-text" },
+  red: { label: "Not Ready", bg: "bg-tier-red-light", text: "text-tier-red-text" },
 };
 
 export default function CategoryBadge({
@@ -38,6 +22,8 @@ export default function CategoryBadge({
   question,
   tier,
   summary,
+  passCount,
+  totalChecks,
   expanded = false,
   onClick,
 }: CategoryBadgeProps) {
@@ -46,39 +32,42 @@ export default function CategoryBadge({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-lg border transition-colors duration-150 ${
-        expanded ? "border-border-strong bg-surface" : "border-border bg-background hover:bg-surface"
-      }`}
+      className="w-full text-left border-t border-[#F3F4F6] first:border-t-0 py-3.5 transition-colors hover:bg-[#FAFAFA]"
     >
-      <div className="flex items-start gap-3">
+      {/* Header row */}
+      <div className="flex items-center gap-3">
         {/* Tier badge */}
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border} shrink-0 mt-0.5`}
+          className={`inline-flex items-center justify-center min-w-[52px] px-2.5 py-[3px] rounded-[4px] text-[11px] font-medium ${config.bg} ${config.text}`}
         >
-          <span aria-hidden="true">{config.icon}</span>
           {config.label}
         </span>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <h3 className="font-semibold text-foreground">{label}</h3>
-            <span className="text-sm text-text-muted">{question}</span>
-          </div>
-          <p className="mt-1 text-sm text-text-secondary line-clamp-2">{summary}</p>
-        </div>
+        {/* Category name */}
+        <span className="text-[14px] font-medium text-foreground">{label}</span>
 
-        {/* Expand indicator */}
+        {/* Check count */}
+        <span className="text-[12px] text-[#B0B0B0]">{passCount}/{totalChecks}</span>
+
+        {/* Spacer */}
+        <span className="flex-1" />
+
+        {/* Chevron */}
         <svg
-          className={`w-5 h-5 text-text-muted shrink-0 mt-1 transition-transform duration-150 ${
-            expanded ? "rotate-180" : ""
-          }`}
+          className={`w-4 h-4 text-[#D1D5DB] shrink-0 transition-transform duration-150 ${expanded ? "rotate-90" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2}
           stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
         </svg>
+      </div>
+
+      {/* Body — finding + description */}
+      <div className="mt-1.5 ml-[74px]">
+        <p className="text-[13px] text-[#4B5563] leading-[1.5]">{summary}</p>
+        <p className="text-[12px] text-[#B0B0B0] mt-0.5">{question}</p>
       </div>
     </button>
   );

@@ -7,7 +7,7 @@ import { categorySummary } from "@/lib/checks/summaries";
 import { generateNarrative } from "@/lib/pdf/narrative";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import RadarChart from "@/components/RadarChart";
+import ScoreRing from "@/components/ScoreRing";
 import CategoryBadge from "@/components/CategoryBadge";
 import CheckDetail, { CategoryProbeSummary } from "@/components/CheckDetail";
 import ActionPlan from "@/components/ActionPlan";
@@ -43,6 +43,7 @@ export default function ResultsView() {
   const handleRescan = async () => {
     if (!result || rescanning) return;
     setRescanning(true);
+    setStaleBannerDismissed(true);
     try {
       const response = await fetch("/api/scan", {
         method: "POST",
@@ -103,10 +104,10 @@ export default function ResultsView() {
           <div className="animate-pulse">
             <div className="h-8 w-48 bg-muted rounded mx-auto mb-2" />
             <div className="h-4 w-64 bg-muted rounded mx-auto mb-8" />
-            <div className="h-64 w-64 bg-muted rounded-full mx-auto mb-8" />
-            <div className="h-6 w-40 bg-muted rounded mx-auto mb-10" />
+            <div className="h-[130px] w-[130px] bg-muted rounded-full mx-auto mb-8" />
+            <div className="h-16 max-w-md bg-muted rounded mx-auto mb-10" />
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-20 bg-muted rounded-lg mb-2" />
+              <div key={i} className="h-16 bg-muted rounded mb-1" />
             ))}
           </div>
         </main>
@@ -144,6 +145,8 @@ export default function ResultsView() {
     year: "numeric",
     month: "long",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
   const narrative = generateNarrative(result);
   const shareUrl = typeof window !== "undefined" ? window.location.href : result.url;
@@ -157,41 +160,36 @@ export default function ResultsView() {
 
       <main className="flex-1 w-full max-w-[1152px] mx-auto px-8 py-8">
         {/* 1. Domain + scan metadata */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+        <div className="text-center mb-6">
+          <h1 className="text-[28px] font-semibold text-foreground">
             {result.domain}
           </h1>
-          <p className="mt-1 text-sm text-text-muted flex items-center justify-center gap-2 flex-wrap">
-            <span>Scanned {scannedDate}</span>
-            <span className="text-border-strong">·</span>
+          <p className="mt-1 text-[13px] text-[#9CA3AF]">
+            Scanned {scannedDate}
+            {" · "}
             <button
               onClick={handleRescan}
               disabled={rescanning}
-              className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-foreground transition-colors disabled:opacity-50"
+              className="underline decoration-[#D1D5DB] underline-offset-2 hover:decoration-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
-              {rescanning ? (
-                <>
-                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Rescanning…
-                </>
-              ) : (
-                <>↻ Rescan</>
-              )}
+              {rescanning ? "Rescanning…" : "Rescan"}
             </button>
           </p>
         </div>
 
-        {/* Staleness banner */}
+        {/* 2. Score ring */}
+        <div className="flex justify-center mb-6">
+          <ScoreRing ready={greenCount} total={totalCategories} />
+        </div>
+
+        {/* Staleness banner — below score ring, subtle */}
         {!staleBannerDismissed && (() => {
           const ageMs = Date.now() - new Date(result.scanned_at).getTime();
           if (ageMs < 15 * 60 * 1000) return null;
           return (
-            <div className="mb-4 px-4 py-3 rounded-lg bg-tier-yellow-light border border-yellow-200 flex items-center justify-between gap-3">
-              <p className="text-sm text-tier-yellow-text">
-                These results are from {relativeTime(result.scanned_at)}. They may not reflect recent changes.{" "}
+            <div className="mb-4 px-3 py-2 rounded-md bg-[#FEFCE8] flex items-center justify-between gap-3">
+              <p className="text-[12px] text-[#CA8A04]">
+                Results from {relativeTime(result.scanned_at)}.{" "}
                 <button
                   onClick={handleRescan}
                   disabled={rescanning}
@@ -202,10 +200,10 @@ export default function ResultsView() {
               </p>
               <button
                 onClick={() => setStaleBannerDismissed(true)}
-                className="flex-shrink-0 text-tier-yellow-text hover:text-foreground"
+                className="flex-shrink-0 text-[#CA8A04] hover:text-foreground"
                 aria-label="Dismiss"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -213,68 +211,44 @@ export default function ResultsView() {
           );
         })()}
 
-        {/* 2. Radar chart */}
-        <div className="flex justify-center mb-6">
-          <div className="block sm:hidden">
-            <RadarChart
-              categories={result.categories.map((c) => ({ label: c.label, tier: c.tier }))}
-              size="md"
-            />
-          </div>
-          <div className="hidden sm:block">
-            <RadarChart
-              categories={result.categories.map((c) => ({ label: c.label, tier: c.tier }))}
-              size="lg"
-            />
-          </div>
+        {/* 3. Narrative — left aligned within centered container */}
+        <div className="max-w-[560px] mx-auto mb-6">
+          <p className="text-[15px] text-[#4B5563] leading-[1.6] text-left">
+            {narrative}
+          </p>
         </div>
 
-        {/* 3. Summary line + narrative */}
-        <p className="text-center text-lg font-medium text-text-secondary mb-3">
-          <span className="text-foreground font-bold">{greenCount} of {totalCategories}</span>
-          {" areas agent-ready"}
-        </p>
-
-        <p className="text-center text-sm text-text-secondary leading-relaxed max-w-2xl mx-auto mb-6">
-          {narrative}
-        </p>
-
-        {/* 4. Action bar — share + download */}
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-8 py-3 border-y border-border">
-          <div className="flex items-center gap-3 text-sm text-text-muted">
-            <span className="font-medium text-text-secondary">Share</span>
-            <button
-              onClick={handleCopyLink}
-              className="hover:text-foreground transition-colors"
-              title="Copy link"
-            >
-              {copied ? "✓ Copied" : "Copy link"}
-            </button>
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on X">
-              <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </a>
-            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on LinkedIn">
-              <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-            </a>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <DownloadReport slug={slug} domain={result.domain} />
-            <a
-              href={`/api/report/${slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-text-muted hover:text-foreground transition-colors font-mono text-xs"
-            >
-              {"{ }"} JSON
-            </a>
-          </div>
+        {/* 4. Share + download toolbar */}
+        <div className="flex items-center justify-center flex-wrap gap-2 mb-8 text-[13px] text-[#6B7280]">
+          <button onClick={handleCopyLink} className="hover:text-foreground transition-colors">
+            {copied ? "✓ Copied" : "Copy link"}
+          </button>
+          <span className="text-[#9CA3AF]">·</span>
+          <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on X">
+            <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+          <span className="text-[#9CA3AF]">·</span>
+          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on LinkedIn">
+            <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+          </a>
+          <span className="text-[#9CA3AF]">·</span>
+          <DownloadReport slug={slug} domain={result.domain} />
+          <span className="text-[#9CA3AF]">·</span>
+          <a
+            href={`/api/report/${slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors font-mono"
+          >
+            {"{ }"} JSON
+          </a>
         </div>
 
-        {/* 6. Score progression */}
+        {/* Score progression */}
         {previousTiers && previousScannedAt && (
           <ScoreProgression
             categories={result.categories}
@@ -284,7 +258,7 @@ export default function ResultsView() {
         )}
 
         {/* 5. Category rows */}
-        <div className="space-y-2 mb-12">
+        <div className="mb-12">
           {result.categories.map((cat) => (
             <div key={cat.category_id}>
               <CategoryBadge
@@ -292,6 +266,8 @@ export default function ResultsView() {
                 question={cat.question}
                 tier={cat.tier}
                 summary={categorySummary(cat)}
+                passCount={cat.checks.filter((c) => c.status === "pass").length}
+                totalChecks={cat.checks.length}
                 expanded={expandedCategory === cat.category_id}
                 onClick={() =>
                   setExpandedCategory(
@@ -301,7 +277,7 @@ export default function ResultsView() {
               />
 
               {expandedCategory === cat.category_id && (
-                <div className="mt-1 ml-4 sm:ml-8 pl-4 border-l-2 border-border space-y-0 mb-2">
+                <div className="mt-1 ml-[74px] pl-4 border-l-2 border-border space-y-0 mb-2">
                   {cat.checks.map((check) => (
                     <CheckDetail key={check.check_id} check={check} />
                   ))}
@@ -329,7 +305,7 @@ export default function ResultsView() {
             href="https://strale.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground underline decoration-border-strong underline-offset-2 hover:decoration-foreground transition-colors"
+            className="text-foreground underline decoration-[#D1D5DB] underline-offset-2 hover:decoration-foreground transition-colors"
           >
             Strale&apos;s marketplace
           </a>
