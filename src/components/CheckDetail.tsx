@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CheckResult, Probe, Confidence } from "@/lib/checks/types";
+import type { CheckResult, Probe, Confidence, FixBlock } from "@/lib/checks/types";
 
 interface CheckDetailProps {
   check: CheckResult;
@@ -45,6 +45,68 @@ function ProbeRow({ probe }: { probe: Probe }) {
   );
 }
 
+const EFFORT_COLORS: Record<string, string> = {
+  low: "bg-tier-green-light text-tier-green-text",
+  medium: "bg-tier-yellow-light text-tier-yellow-text",
+  high: "bg-tier-red-light text-tier-red-text",
+};
+
+function FixBlockSection({ fix }: { fix: FixBlock }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="text-xs text-foreground font-medium hover:text-brand transition-colors flex items-center gap-1"
+      >
+        <svg
+          className={`w-3 h-3 transition-transform ${expanded ? "rotate-90" : ""}`}
+          fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+        How to fix
+        <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded font-medium ${EFFORT_COLORS[fix.effort]}`}>
+          {fix.effort} effort
+        </span>
+        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${EFFORT_COLORS[fix.impact === "high" ? "low" : fix.impact === "low" ? "high" : "medium"]}`}>
+          {fix.impact} impact
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="mt-2 pl-4 border-l-2 border-brand/20 space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-foreground">{fix.what}</p>
+            <p className="text-xs text-text-muted mt-0.5">{fix.why}</p>
+          </div>
+
+          {fix.example_before && fix.example_after && (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <p className="text-[10px] text-text-muted font-medium uppercase tracking-wider mb-1">Before</p>
+                <pre className="text-xs bg-tier-red-light/50 text-foreground p-2 rounded overflow-x-auto font-mono whitespace-pre-wrap">{fix.example_before.trim()}</pre>
+              </div>
+              <div>
+                <p className="text-[10px] text-text-muted font-medium uppercase tracking-wider mb-1">After</p>
+                <pre className="text-xs bg-tier-green-light/50 text-foreground p-2 rounded overflow-x-auto font-mono whitespace-pre-wrap">{fix.example_after.trim()}</pre>
+              </div>
+            </div>
+          )}
+
+          {fix.verification && (
+            <div>
+              <p className="text-[10px] text-text-muted font-medium uppercase tracking-wider mb-1">Verify</p>
+              <pre className="text-xs bg-surface text-foreground p-2 rounded overflow-x-auto font-mono">{fix.verification}</pre>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CheckDetail({ check }: CheckDetailProps) {
   const config = STATUS_CONFIG[check.status] || STATUS_CONFIG.warn;
   const [showDetails, setShowDetails] = useState(false);
@@ -82,6 +144,11 @@ export default function CheckDetail({ check }: CheckDetailProps) {
           <p className="mt-1.5 text-sm text-brand">
             → {check.recommendation}
           </p>
+        )}
+
+        {/* Fix block — for warn/fail checks with a fix */}
+        {check.fix && check.status !== "pass" && (
+          <FixBlockSection fix={check.fix} />
         )}
 
         {/* Expandable "What we checked" section */}

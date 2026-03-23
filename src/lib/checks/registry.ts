@@ -3,6 +3,16 @@ import path from "path";
 import yaml from "js-yaml";
 import type { CheckDefinition, CategoryDefinition, CheckRegistry } from "./types";
 
+interface RawFix {
+  what?: string;
+  why?: string;
+  effort?: string;
+  impact?: string;
+  example_before?: string;
+  example_after?: string;
+  verification?: string;
+}
+
 interface RawCheck {
   id: string;
   name: string;
@@ -12,6 +22,7 @@ interface RawCheck {
   description: string;
   how_we_check?: string;
   recommendation: string;
+  fix?: RawFix;
   mvp?: boolean;
   strale_api_checks?: string[];
   added: string;
@@ -58,6 +69,15 @@ function loadRegistryFromDisk(): CheckRegistry {
           description: check.description,
           how_we_check: check.how_we_check || check.description,
           recommendation: check.recommendation,
+          fix: check.fix ? {
+            what: check.fix.what || "",
+            why: check.fix.why || "",
+            effort: (check.fix.effort || "medium") as "low" | "medium" | "high",
+            impact: (check.fix.impact || "medium") as "low" | "medium" | "high",
+            example_before: check.fix.example_before || "",
+            example_after: check.fix.example_after || "",
+            verification: check.fix.verification || "",
+          } : undefined,
           mvp: check.mvp !== false,
           strale_api_checks: check.strale_api_checks,
           added: check.added,

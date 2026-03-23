@@ -294,8 +294,17 @@ export default function ResultsView() {
             greenCount={greenCount}
             totalCategories={totalCategories}
           />
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-3 flex-wrap">
             <DownloadReport slug={slug} domain={result.domain} />
+            <a
+              href={`/api/report/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-lg border border-border bg-background text-foreground hover:bg-surface transition-colors"
+            >
+              <span className="text-text-muted">{"{ }"}</span>
+              JSON Report
+            </a>
           </div>
         </div>
       </main>

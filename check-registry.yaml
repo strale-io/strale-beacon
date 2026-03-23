@@ -14,6 +14,32 @@ categories:
         description: "Check for llms.txt presence and quality. Does it contain structured capability descriptions?"
         how_we_check: "We fetch /llms.txt and /llms-full.txt via HTTP GET. The file must exist (HTTP 200) and contain capability descriptions — not just a company bio. We look for keywords like 'capability', 'endpoint', 'api', 'function', 'tool', 'service', or 'feature' and require at least 5 non-empty lines."
         recommendation: "Add an llms.txt file to your root domain describing your product's capabilities in a machine-readable format."
+        fix:
+          what: "Create an llms.txt file at your domain root describing your product's capabilities"
+          why: "llms.txt is the primary machine-readable way for LLMs and agents to understand what your product does and how to interact with it"
+          effort: "low"
+          impact: "high"
+          example_before: |
+            GET /llms.txt → 404 Not Found
+          example_after: |
+            # YourProduct
+
+            > Short description of what your product does
+
+            ## API
+            - Base URL: https://api.yourproduct.com/v1
+            - Authentication: Bearer token (get key at /settings/api)
+            - Docs: https://docs.yourproduct.com
+
+            ## Capabilities
+            - User management: CRUD operations for user accounts
+            - Payment processing: Charge cards, manage subscriptions
+            - Webhooks: Real-time event notifications
+
+            ## Links
+            - OpenAPI spec: https://api.yourproduct.com/openapi.json
+            - Status page: https://status.yourproduct.com
+          verification: "curl -s -o /dev/null -w '%{http_code}' https://yourdomain.com/llms.txt should return 200"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -26,6 +52,30 @@ categories:
         description: "Parse robots.txt for rules addressing known AI crawlers: GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Amazonbot, CCBot, Bytespider, cohere-ai, Diffbot."
         how_we_check: "We fetch /robots.txt and parse each User-agent block. We check 10 known AI crawlers (GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Amazonbot, CCBot, Bytespider, cohere-ai, Diffbot) and classify each as allowed, blocked (Disallow: /), or unaddressed. Blocking half or more is a fail."
         recommendation: "Review your robots.txt to ensure AI crawlers can access your content. Consider explicitly allowing crawlers like GPTBot and ClaudeBot."
+        fix:
+          what: "Update robots.txt to explicitly allow AI crawlers"
+          why: "Blocked AI crawlers prevent your product from being indexed by AI platforms, reducing discoverability to millions of users"
+          effort: "low"
+          impact: "high"
+          example_before: |
+            User-agent: GPTBot
+            Disallow: /
+
+            User-agent: ClaudeBot
+            Disallow: /
+          example_after: |
+            User-agent: GPTBot
+            Allow: /
+
+            User-agent: ClaudeBot
+            Allow: /
+
+            User-agent: PerplexityBot
+            Allow: /
+
+            User-agent: Google-Extended
+            Allow: /
+          verification: "curl -s https://yourdomain.com/robots.txt | grep -A1 GPTBot — should show Allow, not Disallow"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -38,6 +88,39 @@ categories:
         description: "Parse homepage HTML for JSON-LD, RDFa, or Microdata. Look for Schema.org types: SoftwareApplication, WebAPI, APIReference, Product."
         how_we_check: "We fetch the homepage HTML and extract all <script type=\"application/ld+json\"> blocks. We parse each as JSON and search recursively for @type fields matching: SoftwareApplication, WebAPI, APIReference, Product, WebApplication, MobileApplication. We also check for Schema.org Microdata via itemtype attributes. For API domains (JSON root response), we additionally check the JSON body for @context or @type fields."
         recommendation: "Add structured data (JSON-LD) to your homepage describing your product using Schema.org types like SoftwareApplication or WebAPI."
+        fix:
+          what: "Add a JSON-LD script block to your homepage describing your product with Schema.org types"
+          why: "Structured data lets agents programmatically understand what your product is, what it does, and how to interact with it"
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            <html>
+              <head><title>YourProduct</title></head>
+              <!-- No structured data -->
+            </html>
+          example_after: |
+            <html>
+              <head>
+                <title>YourProduct</title>
+                <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "SoftwareApplication",
+                  "name": "YourProduct",
+                  "description": "Short description of capabilities",
+                  "url": "https://yourproduct.com",
+                  "applicationCategory": "DeveloperApplication",
+                  "operatingSystem": "Web",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                  }
+                }
+                </script>
+              </head>
+            </html>
+          verification: "curl -s https://yourdomain.com | grep 'application/ld+json' should match"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -50,6 +133,26 @@ categories:
         description: "Does sitemap.xml exist? Does it include API documentation pages, changelog, and pricing? Or only marketing/blog pages?"
         how_we_check: "We fetch /sitemap.xml and check for HTTP 200. We count <loc> entries and search the URL list for paths containing /docs, /api, /developer, /reference (API docs), /changelog, /changes, /release (changelog), and /pricing. A sitemap with at least 2 of these page types passes."
         recommendation: "Add a sitemap.xml that includes your API documentation, changelog, and developer-facing pages — not just marketing content."
+        fix:
+          what: "Add developer-facing pages to your sitemap.xml"
+          why: "Sitemaps help crawlers (including AI crawlers) discover your documentation, changelog, and developer resources"
+          effort: "low"
+          impact: "low"
+          example_before: |
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              <url><loc>https://yourproduct.com/</loc></url>
+              <url><loc>https://yourproduct.com/about</loc></url>
+              <url><loc>https://yourproduct.com/blog</loc></url>
+            </urlset>
+          example_after: |
+            <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+              <url><loc>https://yourproduct.com/</loc></url>
+              <url><loc>https://yourproduct.com/docs</loc></url>
+              <url><loc>https://yourproduct.com/docs/api</loc></url>
+              <url><loc>https://yourproduct.com/pricing</loc></url>
+              <url><loc>https://yourproduct.com/changelog</loc></url>
+            </urlset>
+          verification: "curl -s https://yourdomain.com/sitemap.xml | grep -c '<loc>' — should list developer pages"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -62,6 +165,32 @@ categories:
         description: "Check for machine-discoverable agent interaction endpoints (MCP server manifest, A2A agent card)."
         how_we_check: "We fetch /.well-known/mcp.json and /.well-known/agent.json via HTTP GET. If either returns HTTP 200, we attempt to parse as JSON. A valid JSON response at either path is a pass."
         recommendation: "Publish an MCP server manifest at /.well-known/mcp.json or an A2A agent card at /.well-known/agent.json to enable direct agent discovery."
+        fix:
+          what: "Publish an MCP server manifest or A2A Agent Card at a well-known path"
+          why: "MCP and A2A are the primary protocols for agent-to-service discovery. Without one, agents using protocol-based discovery will not find your product."
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            GET /.well-known/agent.json → 404 Not Found
+            GET /.well-known/mcp.json → 404 Not Found
+          example_after: |
+            # /.well-known/agent.json (A2A Agent Card)
+            {
+              "protocolVersion": "0.3.0",
+              "name": "YourProduct",
+              "description": "What your product does and its capabilities",
+              "url": "https://api.yourproduct.com/a2a",
+              "capabilities": { "streaming": false },
+              "skills": [
+                {
+                  "id": "manage-users",
+                  "name": "Manage Users",
+                  "description": "Create, read, update, delete user accounts",
+                  "tags": ["user-management"]
+                }
+              ]
+            }
+          verification: "curl -s https://yourdomain.com/.well-known/agent.json | jq '.name' should return your product name"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -94,6 +223,44 @@ categories:
         description: "Check common locations for OpenAPI/Swagger spec. Validate format and version (2.0/3.0/3.1)."
         how_we_check: "We check these paths in order: /openapi.json, /swagger.json, /api/openapi.json, /docs/openapi.json, /api-docs. For each, we fetch via GET and attempt JSON parse. If valid JSON with an 'openapi' or 'swagger' version field and a 'paths' object, it's recognized as a spec. We report the version and endpoint count. We also scan homepage HTML for links containing 'openapi' or 'swagger'."
         recommendation: "Publish an OpenAPI specification at a standard location (/openapi.json) so agents can understand your API surface."
+        fix:
+          what: "Publish an OpenAPI 3.x specification at /openapi.json"
+          why: "An OpenAPI spec is the most reliable way for agents to understand your API's endpoints, parameters, and response formats programmatically"
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            GET /openapi.json → 404 Not Found
+            GET /swagger.json → 404 Not Found
+          example_after: |
+            # /openapi.json
+            {
+              "openapi": "3.0.3",
+              "info": {
+                "title": "YourProduct API",
+                "version": "1.0.0",
+                "description": "What this API does"
+              },
+              "servers": [{ "url": "https://api.yourproduct.com/v1" }],
+              "paths": {
+                "/users": {
+                  "get": {
+                    "summary": "List users",
+                    "description": "Returns a paginated list of users",
+                    "responses": {
+                      "200": {
+                        "description": "Success",
+                        "content": {
+                          "application/json": {
+                            "schema": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          verification: "curl -s https://yourdomain.com/openapi.json | jq '.openapi' should return a version string like '3.0.3'"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -106,6 +273,19 @@ categories:
         description: "Is documentation publicly accessible without signup? Is it rendered as parseable HTML or gated behind JS-heavy rendering or auth?"
         how_we_check: "We fetch /docs, /api, /developers, and /api-reference via GET. For each that returns HTTP 200, we check if the page looks like a login page (contains 'sign in'/'log in'/'authenticate' in a short page that was redirected). Pages that pass both checks are considered accessible documentation. For API domains, we also follow cross-domain documentation links found in the root JSON response."
         recommendation: "Make your API documentation publicly accessible without requiring signup. Ensure it renders as parseable HTML, not behind heavy JavaScript or authentication gates."
+        fix:
+          what: "Make API documentation publicly accessible at a standard path without requiring authentication"
+          why: "Agents cannot sign up or log in. If docs are behind auth, agents cannot learn how to use your product."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            GET /docs → 302 Redirect to /login
+            GET /api → 401 Unauthorized
+          example_after: |
+            GET /docs → 200 OK
+            Content-Type: text/html
+            # Public documentation page with API reference, examples, authentication guide
+          verification: "curl -s -o /dev/null -w '%{http_code}' https://yourdomain.com/docs should return 200 (not 302 or 401)"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -128,6 +308,34 @@ categories:
         description: "Parse OpenAPI spec if available. Check percentage of endpoints with descriptions, parameters with descriptions/examples, and defined response schemas."
         how_we_check: "We analyze the OpenAPI spec found by the comp-openapi check. For each endpoint (GET/POST/PUT/PATCH/DELETE), we check for a description or summary field, count parameters with descriptions, and check if responses have schema definitions. We report the percentage of documented endpoints, documented parameters, and schema coverage. 80%+ endpoint docs and 50%+ schema coverage is a pass."
         recommendation: "Complete your API documentation: add descriptions to all endpoints, include parameter examples, and define response schemas."
+        fix:
+          what: "Add descriptions, parameter docs, and response schemas to all OpenAPI endpoints"
+          why: "Incomplete specs leave agents guessing about parameter formats and response structures, causing integration failures"
+          effort: "medium"
+          impact: "medium"
+          example_before: |
+            "/users": {
+              "get": {
+                "responses": { "200": {} }
+              }
+            }
+          example_after: |
+            "/users": {
+              "get": {
+                "summary": "List users",
+                "description": "Returns a paginated list of all users in the organization",
+                "parameters": [
+                  { "name": "limit", "in": "query", "description": "Max results per page (1-100)", "schema": { "type": "integer", "default": 20 } }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Paginated user list",
+                    "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UserList" } } }
+                  }
+                }
+              }
+            }
+          verification: "Parse your openapi.json — every path should have summary, description, and response schemas"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -140,6 +348,27 @@ categories:
         description: "Scan for structured pricing data in OpenAPI extensions, JSON-LD, dedicated endpoints, or well-structured HTML tables."
         how_we_check: "We fetch /pricing (and /plans as a fallback). We look for: (1) JSON-LD containing 'price', 'priceCurrency', or 'offers' fields, (2) HTML <table> elements with pricing keywords (price, plan, tier, month, year, free), (3) 'contact us/sales' patterns indicating gated pricing. For API domains, we also check the root JSON response for pricing-related links. JSON-LD pricing is a pass, HTML tables are a warn, contact-only is a fail."
         recommendation: "Make your pricing machine-readable through structured data, an API endpoint, or well-structured HTML tables. Avoid 'contact us' as the only pricing path."
+        fix:
+          what: "Add JSON-LD pricing data to your /pricing page"
+          why: "Agents evaluating tools for cost comparison need machine-readable pricing. 'Contact us' is a dead end for autonomous agents."
+          effort: "low"
+          impact: "low"
+          example_before: |
+            <!-- /pricing page with only visual pricing cards, no structured data -->
+            <div class="pricing-card">$29/month</div>
+          example_after: |
+            <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "YourProduct API",
+              "offers": [
+                { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+                { "@type": "Offer", "name": "Pro", "price": "29", "priceCurrency": "USD", "billingIncrement": "month" }
+              ]
+            }
+            </script>
+          verification: "curl -s https://yourdomain.com/pricing | grep 'priceCurrency' should match"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -160,6 +389,30 @@ categories:
         description: "Analyze documentation and OpenAPI spec security schemes. Is auth method clearly documented? Standard (OAuth 2.0, API key, Bearer) or custom?"
         how_we_check: "We check three sources: (1) OpenAPI spec securitySchemes/securityDefinitions — structural detection, high confidence. (2) Documentation pages — keyword matching for OAuth 2.0, API Key, Bearer Token, Basic Auth, JWT, OpenID Connect. (3) Homepage text. Finding auth in the OpenAPI spec is a pass; keyword matches in docs only is a warn."
         recommendation: "Clearly document your authentication method. Use standard auth schemes (OAuth 2.0, API key, Bearer token) that agents can follow programmatically."
+        fix:
+          what: "Add securitySchemes to your OpenAPI spec and document auth in your API docs"
+          why: "Agents need to know exactly how to authenticate. OpenAPI securitySchemes is the machine-readable standard."
+          effort: "low"
+          impact: "high"
+          example_before: |
+            # OpenAPI spec with no security section
+            { "openapi": "3.0.3", "paths": { ... } }
+          example_after: |
+            {
+              "openapi": "3.0.3",
+              "components": {
+                "securitySchemes": {
+                  "bearerAuth": {
+                    "type": "http",
+                    "scheme": "bearer",
+                    "bearerFormat": "JWT",
+                    "description": "Get your API key at https://yourproduct.com/settings/api"
+                  }
+                }
+              },
+              "security": [{ "bearerAuth": [] }]
+            }
+          verification: "curl -s https://yourdomain.com/openapi.json | jq '.components.securitySchemes' should return your auth config"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -171,6 +424,23 @@ categories:
         description: "Count human-required steps: web form, email verification, CAPTCHA, phone verification, credit card, manual approval. Each is a friction point agents cannot navigate."
         how_we_check: "We fetch /signup, /register, /sign-up, /get-started. We scan the page HTML for friction keywords: CAPTCHA/reCAPTCHA/hCaptcha/Turnstile, email verification, phone/SMS verification, credit card/payment method/billing info (unless 'free tier/plan/trial' is also present), and manual review/approval/waitlist. This is keyword-based detection with lower confidence — may produce false positives if these terms appear in content rather than actual form requirements."
         recommendation: "Reduce signup friction for programmatic access. Minimize human-required steps (CAPTCHA, phone verification, manual approval) that block autonomous agents."
+        fix:
+          what: "Offer a programmatic API key signup path that avoids human-only verification steps"
+          why: "Agents cannot solve CAPTCHAs, verify phone numbers, or wait for manual approval. Every human-required step is a hard block."
+          effort: "high"
+          impact: "high"
+          example_before: |
+            # Signup requires: email → email verification → CAPTCHA → phone SMS → manual approval
+            # 5 friction points — impossible for an agent
+          example_after: |
+            # Option 1: API key via OAuth app registration (no CAPTCHA)
+            POST /api/oauth/apps
+            { "name": "AgentApp", "redirect_uri": "..." }
+            → Returns client_id and client_secret immediately
+
+            # Option 2: Self-service API key in dashboard after simple email signup
+            # Minimize to: email + password only, instant key generation
+          verification: "Verify that an API key can be obtained without CAPTCHA, phone verification, or manual approval"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -182,6 +452,24 @@ categories:
         description: "Check documentation and pricing pages for sandbox references. Is there a free tier, sandbox mode, or test API keys available?"
         how_we_check: "We scan documentation pages, /pricing, and the homepage for keywords: sandbox, test mode, test key, free tier, free plan, trial, playground, demo API/key/account/environment. We also check the OpenAPI spec for test/sandbox/staging server URLs. This is keyword-based detection — the presence of these words in documentation is taken as evidence of a test environment."
         recommendation: "Provide a sandbox environment, free tier, or test API keys so agents can verify your functionality before committing."
+        fix:
+          what: "Add a sandbox/test mode or free tier that agents can use without payment"
+          why: "Agents need to test integration before committing. Without a sandbox, agents cannot verify your API works for their use case."
+          effort: "medium"
+          impact: "medium"
+          example_before: |
+            # No sandbox, no free tier, all plans require payment
+            # Documentation mentions nothing about test environments
+          example_after: |
+            # Add to your OpenAPI spec:
+            "servers": [
+              { "url": "https://api.yourproduct.com/v1", "description": "Production" },
+              { "url": "https://sandbox.yourproduct.com/v1", "description": "Sandbox — free, rate-limited, test data" }
+            ]
+
+            # And document in your API docs:
+            # "Use test API key 'sk_test_...' for sandbox access. No credit card required."
+          verification: "Documentation or pricing page should mention sandbox, test mode, or free tier"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -193,6 +481,28 @@ categories:
         description: "Make a safe unauthenticated request to API base URL. Is the response structured JSON with error codes, or HTML error page?"
         how_we_check: "We make GET requests to /api, /v1, /api/v1, /api/v2. For each response, we check the Content-Type header and attempt JSON parse. We look for standard error fields (error, code, status, message). Structured JSON with error info is a pass. JSON without standard fields is a warn. HTML responses or timeouts are a fail."
         recommendation: "Return structured JSON error responses with machine-readable error codes. Avoid HTML error pages for API endpoints."
+        fix:
+          what: "Return structured JSON error responses from all API endpoints"
+          why: "HTML error pages are unparseable for agents. Structured JSON errors let agents understand what went wrong and retry correctly."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            GET /api/v1/users (unauthenticated)
+            → 401 Unauthorized
+            Content-Type: text/html
+            <html><body><h1>401 Unauthorized</h1></body></html>
+          example_after: |
+            GET /api/v1/users (unauthenticated)
+            → 401 Unauthorized
+            Content-Type: application/json
+            {
+              "error": {
+                "code": "unauthorized",
+                "message": "Authentication required. Include a Bearer token in the Authorization header.",
+                "docs": "https://docs.yourproduct.com/auth"
+              }
+            }
+          verification: "curl -s https://yourdomain.com/api | jq '.error' should return a structured error object, not HTML"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -204,6 +514,25 @@ categories:
         description: "Check npm, PyPI, and documentation for published packages. Are SDKs published? Framework integrations (LangChain, CrewAI) documented?"
         how_we_check: "We scan documentation pages and the homepage for SDK keywords (npm, pip install, gem install, composer, nuget, cargo, sdk, client library, package) and agent framework keywords (langchain, crewai, autogen, semantic kernel, vercel ai, llamaindex). This is keyword-based detection — we're matching text references, not verifying packages actually exist in registries."
         recommendation: "Publish SDKs in popular package managers and document framework integrations (LangChain, CrewAI) to lower the barrier for agent interaction."
+        fix:
+          what: "Publish an SDK to npm/PyPI and document agent framework integrations"
+          why: "SDKs reduce integration effort from hours to minutes. Framework integrations (LangChain, CrewAI) make your product immediately usable by agent developers."
+          effort: "high"
+          impact: "low"
+          example_before: |
+            # No SDK published, no framework integration docs
+            # Developers must write raw HTTP calls
+          example_after: |
+            # npm install yourproduct
+            # pip install yourproduct
+
+            # Document in your API docs:
+            ## LangChain Integration
+            ```python
+            from langchain_community.tools import YourProductTool
+            tool = YourProductTool(api_key="sk_...")
+            ```
+          verification: "npm info yourproduct or pip show yourproduct should return package info"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -224,6 +553,28 @@ categories:
         description: "Analyze URL patterns, headers, and documentation. Is the API versioned (v1, v2)? Is there a deprecation policy?"
         how_we_check: "We check three sources: (1) OpenAPI spec — info.version field and /vN patterns in server URLs. (2) API response headers — api-version or x-api-version headers, plus /vN in response URLs. (3) Documentation pages — keywords for deprecation, sunset, migration guide, or breaking changes. Two or more versioning signals is a pass."
         recommendation: "Version your API (via URL path or headers) and publish a deprecation policy so agents can depend on stable interfaces."
+        fix:
+          what: "Add version numbers to your API URLs and document a deprecation policy"
+          why: "Without versioning, any API change can break every agent integration. Versioning lets agents pin to a stable contract."
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            # API URL: https://api.yourproduct.com/users
+            # No version in path, no version header
+            # No deprecation policy documented
+          example_after: |
+            # Versioned API URL:
+            https://api.yourproduct.com/v1/users
+
+            # Or version header:
+            X-API-Version: 2024-01-15
+
+            # Deprecation policy in docs:
+            ## API Versioning
+            We maintain backwards compatibility within major versions.
+            Breaking changes are announced 6 months before sunset.
+            Deprecated endpoints return a Sunset header.
+          verification: "curl -sI https://yourdomain.com/api/v1/ | grep -i 'api-version\\|/v[0-9]' — should find version signals"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -236,6 +587,25 @@ categories:
         description: "Check for /changelog, /status, links to statuspage.io or similar. Does a public changelog exist? How recently updated? Status page with uptime?"
         how_we_check: "We fetch /changelog, /changes, /release-notes, /status, /updates. Any that return HTTP 200 count as found. We also scan the homepage HTML for links to statuspage.io, status.* subdomains, or uptime monitoring services. Having both changelog and status signals is a pass; only one is a warn."
         recommendation: "Maintain a public changelog and status page. Agents need to know about breaking changes and current availability."
+        fix:
+          what: "Create a public /changelog page and set up a status page"
+          why: "Agents need to track breaking changes (changelog) and check if the service is up (status) before making calls"
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            GET /changelog → 404 Not Found
+            GET /status → 404 Not Found
+            # No status page linked from homepage
+          example_after: |
+            # /changelog — a simple page listing recent changes:
+            ## 2026-03-15 — v1.3.0
+            - Added: /users/search endpoint
+            - Changed: Pagination now uses cursor-based pagination
+            - Deprecated: /users?page=N (will be removed 2026-09-15)
+
+            # Status page: Use a service like statuspage.io, Instatus, or a custom /status endpoint:
+            GET /api/status → { "status": "operational", "uptime_30d": "99.97%" }
+          verification: "curl -s -o /dev/null -w '%{http_code}' https://yourdomain.com/changelog should return 200"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -247,6 +617,30 @@ categories:
         description: "Check documentation and response headers for rate limit info. Are rate limits documented? X-RateLimit headers present?"
         how_we_check: "We inspect API response headers (from /api, /v1, etc.) for rate-limit-related headers: X-RateLimit-Remaining, X-RateLimit-Limit, RateLimit-*, Retry-After. We also scan documentation pages for rate limit keywords (rate limit, throttle, requests per second/minute/hour, quota). Note: these API requests are unauthenticated, so rate limit headers may not appear until after authentication."
         recommendation: "Document your rate limits and include X-RateLimit headers in API responses so agents can self-throttle."
+        fix:
+          what: "Add X-RateLimit headers to API responses and document limits"
+          why: "Without rate limit info, agents will hammer your API until blocked. Rate headers let agents self-throttle gracefully."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            # API response with no rate limit headers:
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            # Agent doesn't know limits → gets 429 Too Many Requests unexpectedly
+          example_after: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            X-RateLimit-Limit: 100
+            X-RateLimit-Remaining: 87
+            X-RateLimit-Reset: 1711234567
+            Retry-After: 60
+
+            # And in your docs:
+            ## Rate Limits
+            - Free tier: 100 requests/minute
+            - Pro tier: 1,000 requests/minute
+            - Responses include X-RateLimit-* headers
+          verification: "curl -sI https://yourdomain.com/api/v1/... | grep -i 'ratelimit' should return rate limit headers"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -259,6 +653,21 @@ categories:
         description: "Fetch and parse ToS. Do terms address automated access, bots, or API usage? Flag if terms explicitly prohibit automated access."
         how_we_check: "We fetch /terms, /tos, /terms-of-service, /legal/terms. We scan the text for prohibition patterns ('prohibit.*bot/automat/scrap') and permission patterns ('api/automat.*allowed/permitted'). This is keyword-based inference on legal text — confidence is low. We may misinterpret nuanced legal language. Always review your actual ToS for accuracy."
         recommendation: "Review your Terms of Service to ensure they don't prohibit automated access or bot usage. Explicitly address API and agent usage."
+        fix:
+          what: "Add a clause to your ToS explicitly permitting API access and agent/bot usage"
+          why: "If your ToS prohibits 'automated access' or 'bots', responsible agent developers will avoid your product entirely"
+          effort: "low"
+          impact: "low"
+          example_before: |
+            # Terms of Service:
+            "You may not use automated means, bots, scrapers, or crawlers
+             to access or interact with our service."
+          example_after: |
+            # Terms of Service:
+            "Programmatic access via our published API is permitted and encouraged.
+             API usage is subject to our published rate limits. Automated agents
+             and bots may access our API in accordance with these terms."
+          verification: "Review your /terms page — it should not prohibit API access or automated/bot usage"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -271,6 +680,24 @@ categories:
         description: "HTTPS enforced? CORS reasonable? Security headers present (CSP, X-Content-Type-Options, Strict-Transport-Security)?"
         how_we_check: "We inspect HTTP response headers from the homepage for: HTTPS enforcement (URL starts with https://), Strict-Transport-Security (HSTS), X-Content-Type-Options, Content-Security-Policy, X-Frame-Options. Each present header counts as a signal. 4+ signals with HTTPS is a pass; HTTPS with 2+ signals is a warn; no HTTPS is a fail."
         recommendation: "Enforce HTTPS, configure CORS appropriately, and add security headers (CSP, HSTS, X-Content-Type-Options)."
+        fix:
+          what: "Add standard security headers to all HTTP responses"
+          why: "Security headers signal operational maturity. Agents and their developers prefer services with strong security posture."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            # No security headers
+          example_after: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            Strict-Transport-Security: max-age=63072000; includeSubDomains
+            X-Content-Type-Options: nosniff
+            X-Frame-Options: DENY
+            Referrer-Policy: strict-origin-when-cross-origin
+            Content-Security-Policy: default-src 'self'
+          verification: "curl -sI https://yourdomain.com | grep -i 'strict-transport-security' should return a header"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -291,6 +718,33 @@ categories:
         description: "HTTP request to API base URL or most obvious public endpoint. What comes back? Helpful JSON? HTML error page? Redirect to login? Timeout?"
         how_we_check: "We reuse API responses collected by the error-quality check (GET /api, /v1, /api/v1, /api/v2) or make fresh requests if none exist. We check if any returns JSON — and if so, whether the JSON contains documentation links (fields matching doc, link, href, url). For API domains (JSON root), we also parse the root response for navigation links to docs, pricing, or changelog on any domain."
         recommendation: "Ensure your API base URL returns helpful JSON (with documentation links) rather than an HTML error page or redirect to a login form."
+        fix:
+          what: "Return a JSON welcome/discovery response at your API root with links to docs, auth, and key endpoints"
+          why: "An agent's first request is usually to the API root. A helpful JSON response with links lets the agent self-navigate instead of giving up."
+          effort: "low"
+          impact: "high"
+          example_before: |
+            GET /api → 404 Not Found (HTML error page)
+            # or
+            GET /api → 200 OK but just { "status": "ok" }
+          example_after: |
+            GET /api → 200 OK
+            Content-Type: application/json
+            {
+              "name": "YourProduct API",
+              "version": "1.0.0",
+              "documentation": {
+                "quickstart": "https://docs.yourproduct.com/quickstart",
+                "api_reference": "https://docs.yourproduct.com/api",
+                "authentication": "https://docs.yourproduct.com/auth"
+              },
+              "endpoints": {
+                "users": "/api/v1/users",
+                "products": "/api/v1/products"
+              },
+              "openapi": "https://api.yourproduct.com/openapi.json"
+            }
+          verification: "curl -s https://yourdomain.com/api | jq '.documentation' should return documentation links"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -303,6 +757,24 @@ categories:
         description: "From homepage, count link hops to API docs. Is the path followable by an automated crawler, or buried behind JS rendering or hamburger menus?"
         how_we_check: "We parse the homepage HTML for <a href> links matching documentation patterns (/docs, /api, /developer, /reference, /api-reference). We also check for documentation-related text in navigation elements. For API domains, we additionally check JSON responses for link objects pointing to documentation. Direct HTML links count as 1-hop reachable; text mentions without links suggest JS-only navigation."
         recommendation: "Make API documentation reachable within 2 clicks from your homepage via standard HTML links that automated crawlers can follow."
+        fix:
+          what: "Add a direct HTML link to API documentation in your homepage navigation or header"
+          why: "If docs are only reachable through JavaScript menus, agents cannot find them. Standard <a href> links are followable by any crawler."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            <!-- Docs link only in JavaScript dropdown menu — invisible to crawlers -->
+            <button onclick="toggleMenu()">Menu</button>
+            <div class="hidden">
+              <a href="/docs">Docs</a>
+            </div>
+          example_after: |
+            <!-- Direct link in page HTML, visible to crawlers -->
+            <nav>
+              <a href="/docs">Documentation</a>
+              <a href="/docs/api">API Reference</a>
+            </nav>
+          verification: "curl -s https://yourdomain.com | grep -o 'href=\"[^\"]*doc[^\"]*\"' should find doc links"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -314,6 +786,21 @@ categories:
         description: "If public endpoints are accessible, analyze response structure. Consistently JSON? Content-type headers correct? Matches OpenAPI spec?"
         how_we_check: "We analyze all API responses collected during the scan (from /api, /v1, /api/v1, /api/v2). We check: how many return JSON vs HTML, whether JSON responses have correct application/json Content-Type headers, and overall format consistency. All JSON with correct headers is a pass; mixed formats is a warn; no JSON is a fail."
         recommendation: "Return consistent JSON responses with correct Content-Type headers across all API endpoints."
+        fix:
+          what: "Ensure all API endpoints return JSON with Content-Type: application/json"
+          why: "Mixed response formats (some JSON, some HTML) confuse agents and cause parsing failures"
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            GET /api/v1/users → 200 OK, Content-Type: application/json  ✓
+            GET /api/v1/settings → 200 OK, Content-Type: text/html      ✗
+            GET /api/v1/health → 200 OK, Content-Type: text/plain       ✗
+          example_after: |
+            GET /api/v1/users → 200 OK, Content-Type: application/json    ✓
+            GET /api/v1/settings → 200 OK, Content-Type: application/json ✓
+            GET /api/v1/health → 200 OK, Content-Type: application/json   ✓
+            # All endpoints consistently return JSON with correct Content-Type
+          verification: "curl -sI https://yourdomain.com/api/v1/... | grep 'Content-Type' should show application/json for all endpoints"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"
@@ -325,6 +812,28 @@ categories:
         description: "Check for status API endpoints, support emails in structured data, webhook documentation. Is there a programmatic way to report problems or check status?"
         how_we_check: "We check three types of support paths: (1) Status/health API — GET /api/status, /api/health, /health, /api/v1/status, looking for JSON responses. (2) Contact information — homepage HTML scanned for contactPoint structured data, support email, or mailto: links. (3) Webhook documentation — documentation pages scanned for webhook, event notification, or callback URL references. Two or more signals is a pass."
         recommendation: "Provide machine-readable support paths: status API endpoints, support email in structured data, and webhook documentation for automated monitoring."
+        fix:
+          what: "Add a /health or /api/status JSON endpoint and include contact info in structured data"
+          why: "Agents need programmatic ways to check if a service is up and to report issues. HTML contact pages are not machine-readable."
+          effort: "low"
+          impact: "low"
+          example_before: |
+            GET /api/health → 404 Not Found
+            # No contact info in structured data
+            # No webhook documentation
+          example_after: |
+            # Health endpoint:
+            GET /api/health → 200 OK
+            { "status": "healthy", "version": "1.0.0", "uptime": "99.97%" }
+
+            # Structured contact data on homepage:
+            <script type="application/ld+json">
+            { "@context": "https://schema.org", "@type": "Organization",
+              "contactPoint": { "@type": "ContactPoint",
+                "email": "support@yourproduct.com",
+                "contactType": "technical support" } }
+            </script>
+          verification: "curl -s https://yourdomain.com/api/health | jq '.status' should return a status string"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"

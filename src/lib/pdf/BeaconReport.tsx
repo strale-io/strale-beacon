@@ -330,6 +330,28 @@ export default function BeaconReport({ result, previousTiers, previousScannedAt 
                     <Text style={s.recText}>→ {check.recommendation}</Text>
                   </View>
                 ) : null}
+                {check.fix && check.status !== "pass" ? (
+                  <View style={{ marginTop: 4, padding: 6, backgroundColor: "#F8FAFC", borderRadius: 3, borderLeftWidth: 2, borderLeftColor: COLORS.brand }}>
+                    <Text style={{ fontSize: 8, fontWeight: 700, color: COLORS.foreground, marginBottom: 2 }}>
+                      Fix: {check.fix.what}
+                    </Text>
+                    <Text style={{ fontSize: 7, color: COLORS.muted, marginBottom: 3 }}>
+                      {check.fix.effort} effort · {check.fix.impact} impact · {check.fix.why}
+                    </Text>
+                    {check.fix.example_after ? (
+                      <View style={{ backgroundColor: "#F0FDF4", padding: 4, borderRadius: 2, marginBottom: 2 }}>
+                        <Text style={{ fontSize: 6.5, fontFamily: "Courier", color: COLORS.foreground }}>
+                          {check.fix.example_after.trim().substring(0, 300)}{check.fix.example_after.trim().length > 300 ? "..." : ""}
+                        </Text>
+                      </View>
+                    ) : null}
+                    {check.fix.verification ? (
+                      <Text style={{ fontSize: 7, fontFamily: "Courier", color: COLORS.muted }}>
+                        Verify: {check.fix.verification}
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
               </View>
             );
           })}
@@ -430,6 +452,43 @@ export default function BeaconReport({ result, previousTiers, previousScannedAt 
 
         <PageFooter domain={result.domain} date={dateStr} pageNum={nextPage()} />
       </Page>
+
+      {/* ── Page 10: Developer Appendix ── */}
+      {(() => {
+        const fixableChecks = result.categories.flatMap((cat) =>
+          cat.checks
+            .filter((c) => c.status !== "pass" && c.fix)
+            .map((c) => ({ ...c, category: cat.label }))
+        );
+        if (fixableChecks.length === 0) return null;
+        return (
+          <Page size="A4" style={s.page}>
+            <Text style={s.sectionTitle}>Developer Checklist</Text>
+            <Text style={s.sectionSubtitle}>
+              Hand this page to a developer. Each item is a single fix with a verification command.
+            </Text>
+
+            {fixableChecks.map((check, i) => (
+              <View key={check.check_id} style={{ flexDirection: "row", gap: 6, marginBottom: 6, borderBottomWidth: 0.5, borderBottomColor: COLORS.border, paddingBottom: 5 }} wrap={false}>
+                <Text style={{ fontSize: 9, color: COLORS.muted, width: 16 }}>{i + 1}.</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 8.5, fontWeight: 700, color: COLORS.foreground }}>
+                    {check.fix!.what}
+                  </Text>
+                  <Text style={{ fontSize: 7, color: COLORS.muted }}>
+                    {check.category} · {check.name} · {check.fix!.effort} effort · {check.fix!.impact} impact
+                  </Text>
+                  <Text style={{ fontSize: 7, fontFamily: "Courier", color: COLORS.secondary, marginTop: 1 }}>
+                    $ {check.fix!.verification}
+                  </Text>
+                </View>
+              </View>
+            ))}
+
+            <PageFooter domain={result.domain} date={dateStr} pageNum={nextPage()} />
+          </Page>
+        );
+      })()}
     </Document>
   );
 }

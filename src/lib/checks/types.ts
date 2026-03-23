@@ -1,3 +1,14 @@
+/** Structured remediation instructions for a check */
+export interface FixBlock {
+  what: string;
+  why: string;
+  effort: "low" | "medium" | "high";
+  impact: "low" | "medium" | "high";
+  example_before: string;
+  example_after: string;
+  verification: string;
+}
+
 /** Matches the structure of a single check in check-registry.yaml */
 export interface CheckDefinition {
   id: string;
@@ -8,6 +19,7 @@ export interface CheckDefinition {
   description: string;
   recommendation: string;
   how_we_check: string;
+  fix?: FixBlock;
   mvp: boolean;
   strale_api_checks?: string[];
   added: string;
@@ -59,6 +71,7 @@ export interface CheckResult {
   detectionMethod: string;
   confidence: Confidence;
   foundButUnrecognized: boolean;
+  fix?: FixBlock;
 }
 
 export type Tier = "green" | "yellow" | "red";

@@ -49,6 +49,7 @@ function makeResult(
     confidence: opts.confidence || "high",
     foundButUnrecognized: opts.foundButUnrecognized || false,
     details: opts.details,
+    fix: status !== "pass" ? check.fix : undefined,
   };
 }
 
