@@ -32,7 +32,7 @@ export default function CategoryBadge({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left border-t border-[#F3F4F6] first:border-t-0 py-3.5 transition-colors hover:bg-[#FAFAFA]"
+      className="w-full text-left transition-colors"
     >
       {/* Header row */}
       <div className="flex items-center gap-3">
