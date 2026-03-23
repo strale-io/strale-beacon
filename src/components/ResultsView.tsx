@@ -2,14 +2,15 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import type { ScanResult, Tier } from "@/lib/checks/types";
+import type { ScanResult } from "@/lib/checks/types";
+import { categorySummary } from "@/lib/checks/summaries";
+import { generateNarrative } from "@/lib/pdf/narrative";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RadarChart from "@/components/RadarChart";
 import CategoryBadge from "@/components/CategoryBadge";
 import CheckDetail, { CategoryProbeSummary } from "@/components/CheckDetail";
 import ActionPlan from "@/components/ActionPlan";
-import ShareBar from "@/components/ShareBar";
 import SubscribeForm from "@/components/SubscribeForm";
 import DownloadReport from "@/components/DownloadReport";
 import ScoreProgression from "@/components/ScoreProgression";
@@ -25,21 +26,6 @@ function relativeTime(dateStr: string): string {
   return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
-function getCategorySummary(category: { tier: Tier; checks: { status: string; finding: string }[] }): string {
-  const passCount = category.checks.filter((c) => c.status === "pass").length;
-  const total = category.checks.length;
-
-  if (category.tier === "green") {
-    return `${passCount} of ${total} checks passed. Your product is well-prepared in this area.`;
-  }
-  if (category.tier === "red") {
-    const firstFail = category.checks.find((c) => c.status === "fail");
-    return firstFail?.finding || `Only ${passCount} of ${total} checks passed. Significant gaps found.`;
-  }
-  const firstWarnOrFail = category.checks.find((c) => c.status === "warn" || c.status === "fail");
-  return firstWarnOrFail?.finding || `${passCount} of ${total} checks passed. Some improvements needed.`;
-}
-
 export default function ResultsView() {
   const params = useParams();
   const slug = params.slug as string;
@@ -52,6 +38,7 @@ export default function ResultsView() {
   const [previousTiers, setPreviousTiers] = useState<Record<string, string> | null>(null);
   const [previousScannedAt, setPreviousScannedAt] = useState<string | null>(null);
   const [staleBannerDismissed, setStaleBannerDismissed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleRescan = async () => {
     if (!result || rescanning) return;
@@ -70,9 +57,19 @@ export default function ResultsView() {
         }
       }
     } catch {
-      // Silently fail — user can try again
+      // Silently fail
     } finally {
       setRescanning(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback
     }
   };
 
@@ -100,7 +97,7 @@ export default function ResultsView() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-full">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 w-full max-w-[1152px] mx-auto px-8 py-8">
           <div className="animate-pulse">
@@ -120,7 +117,7 @@ export default function ResultsView() {
 
   if (notFound || !result) {
     return (
-      <div className="flex flex-col min-h-full">
+      <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center p-8">
           <div className="text-center">
@@ -147,25 +144,30 @@ export default function ResultsView() {
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
+  const narrative = generateNarrative(result);
+  const shareUrl = typeof window !== "undefined" ? window.location.href : result.url;
+  const shareText = `Just scanned ${result.domain} for agent-readiness with Strale Beacon. Here's what AI agents see 👇`;
+  const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="min-h-screen flex flex-col">
       <Header />
 
       <main className="flex-1 w-full max-w-[1152px] mx-auto px-8 py-8">
+        {/* 1. Domain + scan metadata */}
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {result.domain}
           </h1>
           <p className="mt-1 text-sm text-text-muted flex items-center justify-center gap-2 flex-wrap">
-            <span>Scanned {scannedDate} · {result.scan_duration_ms}ms · v{result.scan_version}</span>
+            <span>Scanned {scannedDate}</span>
+            <span className="text-border-strong">·</span>
             <button
               onClick={handleRescan}
               disabled={rescanning}
-              className="inline-flex items-center gap-1 text-xs text-brand hover:text-brand-hover transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 text-sm text-text-muted hover:text-foreground transition-colors disabled:opacity-50"
             >
               {rescanning ? (
                 <>
@@ -176,18 +178,13 @@ export default function ResultsView() {
                   Rescanning…
                 </>
               ) : (
-                <>
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
-                  </svg>
-                  Rescan
-                </>
+                <>↻ Rescan</>
               )}
             </button>
           </p>
         </div>
 
-        {/* Staleness banner — shown when results are older than 15 minutes */}
+        {/* Staleness banner */}
         {!staleBannerDismissed && (() => {
           const ageMs = Date.now() - new Date(result.scanned_at).getTime();
           if (ageMs < 15 * 60 * 1000) return null;
@@ -216,32 +213,68 @@ export default function ResultsView() {
           );
         })()}
 
+        {/* 2. Radar chart */}
         <div className="flex justify-center mb-6">
           <div className="block sm:hidden">
             <RadarChart
-              categories={result.categories.map((c) => ({
-                label: c.label,
-                tier: c.tier,
-              }))}
+              categories={result.categories.map((c) => ({ label: c.label, tier: c.tier }))}
               size="md"
             />
           </div>
           <div className="hidden sm:block">
             <RadarChart
-              categories={result.categories.map((c) => ({
-                label: c.label,
-                tier: c.tier,
-              }))}
+              categories={result.categories.map((c) => ({ label: c.label, tier: c.tier }))}
               size="lg"
             />
           </div>
         </div>
 
-        <p className="text-center text-lg font-medium text-text-secondary mb-6">
+        {/* 3. Summary line + narrative */}
+        <p className="text-center text-lg font-medium text-text-secondary mb-3">
           <span className="text-foreground font-bold">{greenCount} of {totalCategories}</span>
           {" areas agent-ready"}
         </p>
 
+        <p className="text-center text-sm text-text-secondary leading-relaxed max-w-2xl mx-auto mb-6">
+          {narrative}
+        </p>
+
+        {/* 4. Action bar — share + download */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-8 py-3 border-y border-border">
+          <div className="flex items-center gap-3 text-sm text-text-muted">
+            <span className="font-medium text-text-secondary">Share</span>
+            <button
+              onClick={handleCopyLink}
+              className="hover:text-foreground transition-colors"
+              title="Copy link"
+            >
+              {copied ? "✓ Copied" : "Copy link"}
+            </button>
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on X">
+              <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors" title="Share on LinkedIn">
+              <svg className="w-3.5 h-3.5 inline" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              </svg>
+            </a>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <DownloadReport slug={slug} domain={result.domain} />
+            <a
+              href={`/api/report/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-text-muted hover:text-foreground transition-colors font-mono text-xs"
+            >
+              {"{ }"} JSON
+            </a>
+          </div>
+        </div>
+
+        {/* 6. Score progression */}
         {previousTiers && previousScannedAt && (
           <ScoreProgression
             categories={result.categories}
@@ -250,6 +283,7 @@ export default function ResultsView() {
           />
         )}
 
+        {/* 5. Category rows */}
         <div className="space-y-2 mb-12">
           {result.categories.map((cat) => (
             <div key={cat.category_id}>
@@ -257,7 +291,7 @@ export default function ResultsView() {
                 label={cat.label}
                 question={cat.question}
                 tier={cat.tier}
-                summary={getCategorySummary(cat)}
+                summary={categorySummary(cat)}
                 expanded={expandedCategory === cat.category_id}
                 onClick={() =>
                   setExpandedCategory(
@@ -278,35 +312,29 @@ export default function ResultsView() {
           ))}
         </div>
 
+        {/* 7. Action plan */}
         <div className="mb-12">
           <ActionPlan result={result} />
         </div>
 
-        <div className="mb-12">
+        {/* 8. Subscribe — compact */}
+        <div className="mb-8">
           <SubscribeForm domain={result.domain} />
         </div>
 
-        {/* Share and download */}
-        <div className="mb-12 space-y-4">
-          <ShareBar
-            url={result.url}
-            productName={result.domain}
-            greenCount={greenCount}
-            totalCategories={totalCategories}
-          />
-          <div className="flex justify-center gap-3 flex-wrap">
-            <DownloadReport slug={slug} domain={result.domain} />
-            <a
-              href={`/api/report/${slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-[4px] border border-border-strong bg-background text-foreground hover:bg-surface transition-colors"
-            >
-              <span className="text-text-muted">{"{ }"}</span>
-              JSON Report
-            </a>
-          </div>
-        </div>
+        {/* 9. Strale connection — subtle text */}
+        <p className="text-center text-sm text-text-muted mb-8">
+          Want agents to find your product? List it on{" "}
+          <a
+            href="https://strale.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground underline decoration-border-strong underline-offset-2 hover:decoration-foreground transition-colors"
+          >
+            Strale&apos;s marketplace
+          </a>
+          {" →"}
+        </p>
       </main>
 
       <Footer />

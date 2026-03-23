@@ -12,23 +12,15 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!email.trim()) return;
-
     setStatus("submitting");
-
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
-
-      if (response.ok) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-      }
+      setStatus(response.ok ? "success" : "error");
     } catch {
       setStatus("error");
     }
@@ -36,40 +28,34 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
 
   if (status === "success") {
     return (
-      <div className="text-center py-6 px-4 bg-tier-green-light rounded-lg border border-tier-green-border">
-        <p className="text-sm font-medium text-tier-green-text">
-          We&apos;ll email you when we detect changes to {domain}&apos;s agent-readiness.
-        </p>
-      </div>
+      <p className="text-sm text-center text-tier-green-text">
+        We&apos;ll email you when we detect changes to {domain}&apos;s agent-readiness.
+      </p>
     );
   }
 
   return (
-    <div className="text-center py-6 px-4 bg-surface rounded-lg border border-border">
-      <p className="font-medium text-foreground text-sm">
-        Want to know when your score changes?
-      </p>
-      <form onSubmit={handleSubmit} className="mt-3 flex gap-2 max-w-sm mx-auto">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
-          required
-          disabled={status === "submitting"}
-          className="flex-1 h-9 px-3 text-sm rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={status === "submitting"}
-          className="h-9 px-4 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 whitespace-nowrap"
-        >
-          {status === "submitting" ? "..." : "Notify me"}
-        </button>
-      </form>
+    <form onSubmit={handleSubmit} className="flex items-center justify-center gap-2 flex-wrap">
+      <span className="text-sm text-text-secondary">Get notified when your score changes:</span>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@company.com"
+        required
+        disabled={status === "submitting"}
+        className="h-8 px-3 text-sm rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50 w-48"
+      />
+      <button
+        type="submit"
+        disabled={status === "submitting"}
+        className="h-8 px-3 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 whitespace-nowrap"
+      >
+        {status === "submitting" ? "..." : "Notify me"}
+      </button>
       {status === "error" && (
-        <p className="mt-2 text-xs text-tier-red">Something went wrong. Please try again.</p>
+        <span className="text-xs text-tier-red">Something went wrong.</span>
       )}
-    </div>
+    </form>
   );
 }

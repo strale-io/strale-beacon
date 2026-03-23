@@ -1,4 +1,5 @@
 import type { ScanResult, CheckResult, FixBlock } from "@/lib/checks/types";
+import { getActionTitle } from "@/lib/checks/summaries";
 
 interface ActionPlanProps {
   result: ScanResult;
@@ -44,21 +45,23 @@ export default function ActionPlan({ result }: ActionPlanProps) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Prioritized Action Plan</h2>
+      <h2 className="text-xl font-bold text-foreground mb-1">What to fix first</h2>
       <p className="text-sm text-text-secondary mb-6">
-        The highest-impact, lowest-effort fixes to improve your agent-readiness.
+        Highest-impact, lowest-effort fixes to improve your agent-readiness.
       </p>
 
       <ol className="space-y-4">
         {topActions.map((action, i) => (
           <li key={action.check_id} className="flex gap-4">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand text-white text-sm font-bold flex items-center justify-center mt-0.5">
+            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-foreground text-background text-sm font-bold flex items-center justify-center mt-0.5">
               {i + 1}
             </span>
 
             <div className="min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
-                <h3 className="font-semibold text-foreground">{action.name}</h3>
+                <h3 className="font-semibold text-foreground">
+                  {getActionTitle(action.check_id, action.name)}
+                </h3>
                 <span className="text-xs text-text-muted px-1.5 py-0.5 bg-muted rounded">
                   {action.category}
                 </span>
@@ -74,30 +77,12 @@ export default function ActionPlan({ result }: ActionPlanProps) {
                 )}
               </div>
               <p className="mt-1 text-sm text-text-secondary">
-                {action.fix ? action.fix.what : action.recommendation}
+                {action.fix ? action.fix.why : action.recommendation}
               </p>
             </div>
           </li>
         ))}
       </ol>
-
-      {/* Strale CTA */}
-      <div className="mt-8 p-5 bg-brand-light rounded-lg border border-border">
-        <p className="text-foreground font-medium">
-          Beacon shows you where you stand. Strale helps you get there.
-        </p>
-        <p className="mt-2 text-sm text-text-secondary">
-          List your capabilities on Strale&apos;s marketplace and become accessible to agents today.
-        </p>
-        <a
-          href="https://strale.dev"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors"
-        >
-          Explore Strale →
-        </a>
-      </div>
     </div>
   );
 }
