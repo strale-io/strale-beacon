@@ -211,9 +211,9 @@ export default function ResultsView() {
           );
         })()}
 
-        {/* 3. Narrative — left aligned within centered container */}
+        {/* 3. Narrative — left aligned, strale.dev body text style (text-lg on content pages) */}
         <div className="max-w-[560px] mx-auto mb-6">
-          <p className="text-[15px] text-[#4B5563] leading-[1.6] text-left">
+          <p className="text-lg text-[#4B5563] leading-[1.625] text-left">
             {narrative}
           </p>
         </div>
