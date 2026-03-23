@@ -340,6 +340,32 @@ categories:
         added: "2026-03"
         last_reviewed: "2026-03"
 
+      - id: "comp-schema-drift"
+        name: "Schema Drift Detection"
+        check_type: "schema_drift"
+        weight: "high"
+        description: "Compare actual API responses to the documented OpenAPI spec. Do real responses match documented schemas?"
+        how_we_check: "We read the OpenAPI spec (if found), select up to 5 public GET endpoints that don't require authentication or path parameters, make real requests to each, and compare the response shape (top-level keys, nested structure, value types) to what the spec documents. We report mismatches between documented and actual response schemas, up to 2 levels deep."
+        recommendation: "Update your OpenAPI specification to match your actual API responses, or update your API to match the spec. Schema drift causes agent failures because agents build requests and parse responses based on the spec."
+        fix:
+          what: "Align your OpenAPI specification with your actual API responses"
+          why: "Agents that follow your spec will send incorrect requests or fail to parse responses if the spec doesn't match reality"
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            # OpenAPI spec says:
+            # GET /v1/items → { "items": [...], "total": 100 }
+            # But actual response is:
+            # GET /v1/items → { "data": [...], "meta": { "total": 100 } }
+          example_after: |
+            # OpenAPI spec matches actual response:
+            # GET /v1/items → { "data": [...], "meta": { "total": 100 } }
+            # Spec updated to document 'data' and 'meta' fields
+          verification: "For each endpoint in your OpenAPI spec, run: curl -s https://yourapi.com/endpoint | jq 'keys' and compare the top-level keys to what the spec documents"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
       - id: "comp-machine-pricing"
         name: "Machine-Readable Pricing"
         check_type: "html_analyze"

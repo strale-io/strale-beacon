@@ -11,6 +11,7 @@
 import type { CheckDefinition, CheckResult, ScanContext, Probe, Confidence } from "./types";
 import { beaconFetch, type FetchResult } from "./fetch";
 import { extractLinksFromJson, linksByCategory, type FoundLink } from "./json-links";
+import { checkSchemaDrift } from "./schema-drift";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1170,6 +1171,7 @@ const CHECK_HANDLERS: Record<string, (ctx: ScanContext, check: CheckDefinition) 
   "comp-openapi": checkOpenApi,
   "comp-api-docs": checkApiDocs,
   "comp-endpoint-completeness": checkEndpointCompleteness,
+  "comp-schema-drift": checkSchemaDrift,
   "comp-machine-pricing": checkMachinePricing,
   "use-auth-docs": checkAuthDocs,
   "use-signup-friction": checkSignupFriction,

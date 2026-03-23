@@ -62,6 +62,10 @@ function scoreComprehension(results: CheckResult[]): Tier {
   const openapi = checkPassed(results, "comp-openapi");
   const docs = checkPassed(results, "comp-api-docs");
   const completeness = checkPassed(results, "comp-endpoint-completeness");
+  const schemaDriftFailed = results.some((r) => r.check_id === "comp-schema-drift" && r.status === "fail");
+
+  // Schema drift failure caps at yellow — a spec that lies is worse than no spec
+  if (schemaDriftFailed) return "yellow";
 
   if (openapi && (completeness || docs)) return "green";
 
