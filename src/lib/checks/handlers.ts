@@ -180,25 +180,6 @@ export async function checkStructuredData(ctx: ScanContext, check: CheckDefiniti
   if (hpResult) probes.push(toProbe(hpResult));
 
   const html = ctx.homepageHtml || "";
-  let searchContent = html;
-
-  // For API domains, also check the JSON root response
-  if (ctx.domainType === "api") {
-    try {
-      const rootJson = JSON.parse(html);
-      if (rootJson["@context"] || rootJson["@type"]) {
-        searchContent = html; // JSON-LD in root response
-      }
-    } catch { /* not JSON, that's fine */ }
-  }
-
-  const jsonLdBlocks: unknown[] = [];
-  const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let match;
-  while ((match = jsonLdRegex.exec(searchContent)) !== null) {
-    try { jsonLdBlocks.push(JSON.parse(match[1])); } catch { /* ignore */ }
-  }
-
   const relevantTypes = ["SoftwareApplication", "WebAPI", "APIReference", "Product", "WebApplication", "MobileApplication"];
   const foundTypes: string[] = [];
 
@@ -211,18 +192,39 @@ export async function checkStructuredData(ctx: ScanContext, check: CheckDefiniti
     if (Array.isArray(type)) type.forEach((t) => { if (typeof t === "string" && relevantTypes.includes(t)) foundTypes.push(t); });
     Object.values(record).forEach(searchForTypes);
   };
+
+  // For API domains, check the JSON root response body directly
+  if (ctx.domainType === "api") {
+    try {
+      const rootJson = JSON.parse(html);
+      if (rootJson["@context"] || rootJson["@type"]) {
+        searchForTypes(rootJson);
+        if (foundTypes.length > 0) {
+          return makeResult(check, "pass", `Found @type: ${[...new Set(foundTypes)].join(", ")} in JSON response body at /.`, { probes, details: { source: "json-body", types: foundTypes } });
+        }
+      }
+    } catch { /* not valid JSON, fall through to HTML parsing */ }
+  }
+
+  // HTML path: extract JSON-LD blocks from <script> tags
+  const jsonLdBlocks: unknown[] = [];
+  const jsonLdRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+  while ((match = jsonLdRegex.exec(html)) !== null) {
+    try { jsonLdBlocks.push(JSON.parse(match[1])); } catch { /* ignore */ }
+  }
   jsonLdBlocks.forEach(searchForTypes);
 
   const hasMicrodata = /itemtype=["']https?:\/\/schema\.org\/(SoftwareApplication|WebAPI|Product)/i.test(html);
   if (hasMicrodata) foundTypes.push("Microdata");
 
   if (foundTypes.length > 0) {
-    return makeResult(check, "pass", `Found structured data with relevant types: ${[...new Set(foundTypes)].join(", ")}.`, { probes, details: { jsonLdCount: jsonLdBlocks.length, types: foundTypes } });
+    return makeResult(check, "pass", `Found structured data with relevant types: ${[...new Set(foundTypes)].join(", ")}.`, { probes, details: { source: "html", jsonLdCount: jsonLdBlocks.length, types: foundTypes } });
   }
   if (jsonLdBlocks.length > 0) {
     return makeResult(check, "warn", `Found ${jsonLdBlocks.length} JSON-LD block(s) but none describe product capabilities (looked for: ${relevantTypes.join(", ")}).`, { probes, foundButUnrecognized: true, details: { jsonLdCount: jsonLdBlocks.length } });
   }
-  return makeResult(check, "fail", `No structured data (JSON-LD, Microdata) found on the homepage. Searched HTML for <script type="application/ld+json"> and itemtype attributes.`, { probes });
+  return makeResult(check, "fail", `No structured data found. ${ctx.domainType === "api" ? "Checked JSON response body for @context/@type fields. " : ""}Searched HTML for <script type="application/ld+json"> and itemtype attributes.`, { probes });
 }
 
 /** disc-sitemap: Check sitemap.xml */
@@ -645,13 +647,16 @@ export async function checkErrorQuality(ctx: ScanContext, check: CheckDefinition
     const contentType = result.headers["content-type"] || "";
     const isJson = contentType.includes("json");
 
+    // Store full body (up to 50KB) so downstream checks can parse it
+    const body = result.body.slice(0, 50_000);
+
     ctx.apiResponses.push({
       url, status: result.status, contentType, isJson,
-      headers: result.headers, body: result.body.slice(0, 2000),
+      headers: result.headers, body,
     });
 
     if (!bestResponse || (isJson && !bestResponse.isJson)) {
-      bestResponse = { url, status: result.status, contentType, isJson, body: result.body.slice(0, 2000) };
+      bestResponse = { url, status: result.status, contentType, isJson, body };
     }
   }
 
@@ -662,13 +667,20 @@ export async function checkErrorQuality(ctx: ScanContext, check: CheckDefinition
   if (bestResponse.isJson) {
     try {
       const json = JSON.parse(bestResponse.body);
+
+      // 2xx responses: any valid structured JSON is a pass (the API works)
+      if (bestResponse.status >= 200 && bestResponse.status < 300) {
+        return makeResult(check, "pass", `API returns structured JSON at ${bestResponse.url} (HTTP ${bestResponse.status}).`, { probes, details: { sampleStatus: bestResponse.status } });
+      }
+
+      // 4xx/5xx responses: check for standard error fields
       const hasErrorCode = json.error || json.code || json.status || json.message;
       if (hasErrorCode) {
         return makeResult(check, "pass", `API returns structured JSON error responses with error information at ${bestResponse.url} (HTTP ${bestResponse.status}).`, { probes, details: { sampleStatus: bestResponse.status } });
       }
-      return makeResult(check, "warn", `API returns JSON at ${bestResponse.url} (HTTP ${bestResponse.status}) but without standard error fields (error, code, status, message). Response starts with: "${bestResponse.body.substring(0, 100)}..."`, { probes, details: { sampleStatus: bestResponse.status } });
+      return makeResult(check, "warn", `API returns JSON at ${bestResponse.url} (HTTP ${bestResponse.status}) but without standard error fields (error, code, status, message).`, { probes, details: { sampleStatus: bestResponse.status } });
     } catch {
-      return makeResult(check, "warn", `API endpoint at ${bestResponse.url} claims JSON content-type but body is not valid JSON.`, { probes, foundButUnrecognized: true });
+      return makeResult(check, "warn", `API endpoint at ${bestResponse.url} claims JSON content-type but body is not valid JSON (${bestResponse.body.length} bytes).`, { probes, foundButUnrecognized: true });
     }
   }
 
@@ -929,7 +941,7 @@ export async function checkFirstContact(ctx: ScanContext, check: CheckDefinition
         url: ctx.baseUrl + p, status: result.status,
         contentType: result.headers["content-type"] || "",
         isJson: (result.headers["content-type"] || "").includes("json"),
-        headers: result.headers, body: result.body.slice(0, 2000),
+        headers: result.headers, body: result.body.slice(0, 50_000),
       });
     }
   }
