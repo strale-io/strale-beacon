@@ -7,6 +7,7 @@ export interface CheckDefinition {
   weight: "high" | "medium" | "low";
   description: string;
   recommendation: string;
+  how_we_check: string;
   mvp: boolean;
   strale_api_checks?: string[];
   added: string;
@@ -33,6 +34,18 @@ export interface CheckRegistry {
   categories: CategoryDefinition[];
 }
 
+/** A single HTTP request made during a check */
+export interface Probe {
+  url: string;
+  method: string;
+  status: number | null;
+  contentType: string | null;
+  snippet: string | null;
+  error: string | null;
+}
+
+export type Confidence = "high" | "medium" | "low";
+
 /** Result of running a single check */
 export interface CheckResult {
   check_id: string;
@@ -42,6 +55,10 @@ export interface CheckResult {
   recommendation: string;
   weight: "high" | "medium" | "low";
   details?: Record<string, unknown>;
+  probes: Probe[];
+  detectionMethod: string;
+  confidence: Confidence;
+  foundButUnrecognized: boolean;
 }
 
 export type Tier = "green" | "yellow" | "red";
@@ -65,6 +82,8 @@ export interface ScanResult {
   scan_version: string;
 }
 
+export type DomainType = "api" | "website" | "unknown";
+
 /**
  * Shared context that accumulates findings as checks run.
  * Producers write data; consumers read it.
@@ -74,6 +93,9 @@ export interface ScanContext {
   targetUrl: string;
   /** Parsed base URL (origin) */
   baseUrl: string;
+
+  /** Detected domain type: api (JSON root), website (HTML root), or unknown */
+  domainType: DomainType;
 
   /** HTML content of the homepage (fetched once, reused) */
   homepageHtml?: string;
@@ -89,6 +111,9 @@ export interface ScanContext {
 
   /** Documentation URLs that were found accessible */
   docUrls: string[];
+
+  /** Cross-domain links discovered from the root response */
+  crossDomainLinks: Array<{ href: string; label: string; source: string }>;
 
   /** API endpoint responses collected during scanning */
   apiResponses: Array<{
@@ -112,7 +137,9 @@ export function createScanContext(url: string): ScanContext {
   return {
     targetUrl: url,
     baseUrl: parsed.origin,
+    domainType: "unknown",
     docUrls: [],
+    crossDomainLinks: [],
     apiResponses: [],
     fetchedPages: new Map(),
     fetchedHeaders: new Map(),

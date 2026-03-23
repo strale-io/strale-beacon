@@ -10,6 +10,7 @@ interface RawCheck {
   paths?: string[];
   weight: string;
   description: string;
+  how_we_check?: string;
   recommendation: string;
   mvp?: boolean;
   strale_api_checks?: string[];
@@ -55,6 +56,7 @@ function loadRegistryFromDisk(): CheckRegistry {
           paths: check.paths,
           weight: check.weight as CheckDefinition["weight"],
           description: check.description,
+          how_we_check: check.how_we_check || check.description,
           recommendation: check.recommendation,
           mvp: check.mvp !== false,
           strale_api_checks: check.strale_api_checks,

@@ -248,13 +248,43 @@ export default function BeaconReport({ result }: BeaconReportProps) {
 
           {cat.checks.map((check) => {
             const icon = STATUS_ICON[check.status] || STATUS_ICON.warn;
+            const probes = check.probes || [];
             return (
               <View key={check.check_id} style={s.checkItem} wrap={false}>
                 <View style={s.checkHeader}>
                   <Text style={[s.checkIcon, { color: icon.color }]}>{icon.icon}</Text>
                   <Text style={s.checkName}>{check.name}</Text>
+                  {check.confidence && check.confidence !== "high" && (
+                    <Text style={{ fontSize: 7, color: COLORS.muted, marginLeft: 4 }}>
+                      ({check.confidence} confidence)
+                    </Text>
+                  )}
+                  {check.foundButUnrecognized && (
+                    <Text style={{ fontSize: 7, color: COLORS.yellow, marginLeft: 4 }}>
+                      (found but format not recognized)
+                    </Text>
+                  )}
                 </View>
+                {check.detectionMethod ? (
+                  <Text style={{ fontSize: 7.5, color: COLORS.muted, marginBottom: 2 }}>
+                    {check.detectionMethod}
+                  </Text>
+                ) : null}
                 <Text style={s.checkFinding}>{check.finding}</Text>
+                {probes.length > 0 ? (
+                  <View style={{ marginTop: 2, marginBottom: 2 }}>
+                    {probes.slice(0, 6).map((p, i) => (
+                      <Text key={i} style={{ fontSize: 7, fontFamily: "Courier", color: COLORS.muted }}>
+                        {p.method} {p.url} → {p.status || p.error || "failed"}
+                      </Text>
+                    ))}
+                    {probes.length > 6 ? (
+                      <Text style={{ fontSize: 7, color: COLORS.muted }}>
+                        ...and {probes.length - 6} more
+                      </Text>
+                    ) : null}
+                  </View>
+                ) : null}
                 {check.recommendation ? (
                   <View style={s.recBox}>
                     <Text style={s.recText}>→ {check.recommendation}</Text>

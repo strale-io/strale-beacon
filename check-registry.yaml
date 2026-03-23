@@ -12,6 +12,7 @@ categories:
         paths: ["/llms.txt", "/llms-full.txt"]
         weight: "high"
         description: "Check for llms.txt presence and quality. Does it contain structured capability descriptions?"
+        how_we_check: "We fetch /llms.txt and /llms-full.txt via HTTP GET. The file must exist (HTTP 200) and contain capability descriptions — not just a company bio. We look for keywords like 'capability', 'endpoint', 'api', 'function', 'tool', 'service', or 'feature' and require at least 5 non-empty lines."
         recommendation: "Add an llms.txt file to your root domain describing your product's capabilities in a machine-readable format."
         mvp: true
         added: "2026-03"
@@ -23,6 +24,7 @@ categories:
         paths: ["/robots.txt"]
         weight: "medium"
         description: "Parse robots.txt for rules addressing known AI crawlers: GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Amazonbot, CCBot, Bytespider, cohere-ai, Diffbot."
+        how_we_check: "We fetch /robots.txt and parse each User-agent block. We check 10 known AI crawlers (GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Amazonbot, CCBot, Bytespider, cohere-ai, Diffbot) and classify each as allowed, blocked (Disallow: /), or unaddressed. Blocking half or more is a fail."
         recommendation: "Review your robots.txt to ensure AI crawlers can access your content. Consider explicitly allowing crawlers like GPTBot and ClaudeBot."
         mvp: true
         added: "2026-03"
@@ -34,6 +36,7 @@ categories:
         paths: ["/"]
         weight: "medium"
         description: "Parse homepage HTML for JSON-LD, RDFa, or Microdata. Look for Schema.org types: SoftwareApplication, WebAPI, APIReference, Product."
+        how_we_check: "We fetch the homepage HTML and extract all <script type=\"application/ld+json\"> blocks. We parse each as JSON and search recursively for @type fields matching: SoftwareApplication, WebAPI, APIReference, Product, WebApplication, MobileApplication. We also check for Schema.org Microdata via itemtype attributes. For API domains (JSON root response), we additionally check the JSON body for @context or @type fields."
         recommendation: "Add structured data (JSON-LD) to your homepage describing your product using Schema.org types like SoftwareApplication or WebAPI."
         mvp: true
         added: "2026-03"
@@ -45,6 +48,7 @@ categories:
         paths: ["/sitemap.xml"]
         weight: "low"
         description: "Does sitemap.xml exist? Does it include API documentation pages, changelog, and pricing? Or only marketing/blog pages?"
+        how_we_check: "We fetch /sitemap.xml and check for HTTP 200. We count <loc> entries and search the URL list for paths containing /docs, /api, /developer, /reference (API docs), /changelog, /changes, /release (changelog), and /pricing. A sitemap with at least 2 of these page types passes."
         recommendation: "Add a sitemap.xml that includes your API documentation, changelog, and developer-facing pages — not just marketing content."
         mvp: true
         added: "2026-03"
@@ -56,6 +60,7 @@ categories:
         paths: ["/.well-known/mcp.json", "/.well-known/agent.json"]
         weight: "high"
         description: "Check for machine-discoverable agent interaction endpoints (MCP server manifest, A2A agent card)."
+        how_we_check: "We fetch /.well-known/mcp.json and /.well-known/agent.json via HTTP GET. If either returns HTTP 200, we attempt to parse as JSON. A valid JSON response at either path is a pass."
         recommendation: "Publish an MCP server manifest at /.well-known/mcp.json or an A2A agent card at /.well-known/agent.json to enable direct agent discovery."
         mvp: true
         added: "2026-03"
@@ -66,6 +71,7 @@ categories:
         check_type: "api_probe"
         weight: "medium"
         description: "Query Smithery, MCP Market, npm for the product name or domain."
+        how_we_check: "Not yet implemented — v2 feature."
         recommendation: "List your product on agent registries like Smithery or MCP Market to increase discoverability."
         mvp: false
         added: "2026-03"
@@ -86,6 +92,7 @@ categories:
         paths: ["/openapi.json", "/swagger.json", "/api/openapi.json", "/docs/openapi.json", "/api-docs"]
         weight: "high"
         description: "Check common locations for OpenAPI/Swagger spec. Validate format and version (2.0/3.0/3.1)."
+        how_we_check: "We check these paths in order: /openapi.json, /swagger.json, /api/openapi.json, /docs/openapi.json, /api-docs. For each, we fetch via GET and attempt JSON parse. If valid JSON with an 'openapi' or 'swagger' version field and a 'paths' object, it's recognized as a spec. We report the version and endpoint count. We also scan homepage HTML for links containing 'openapi' or 'swagger'."
         recommendation: "Publish an OpenAPI specification at a standard location (/openapi.json) so agents can understand your API surface."
         mvp: true
         added: "2026-03"
@@ -97,6 +104,7 @@ categories:
         paths: ["/docs", "/api", "/developers", "/api-reference"]
         weight: "medium"
         description: "Is documentation publicly accessible without signup? Is it rendered as parseable HTML or gated behind JS-heavy rendering or auth?"
+        how_we_check: "We fetch /docs, /api, /developers, and /api-reference via GET. For each that returns HTTP 200, we check if the page looks like a login page (contains 'sign in'/'log in'/'authenticate' in a short page that was redirected). Pages that pass both checks are considered accessible documentation. For API domains, we also follow cross-domain documentation links found in the root JSON response."
         recommendation: "Make your API documentation publicly accessible without requiring signup. Ensure it renders as parseable HTML, not behind heavy JavaScript or authentication gates."
         mvp: true
         added: "2026-03"
@@ -107,6 +115,7 @@ categories:
         check_type: "ai_analyze"
         weight: "medium"
         description: "Send product self-description to Claude API for evaluation. Is it specific enough to distinguish from competitors? Produces rewrite suggestion."
+        how_we_check: "Not yet implemented — v2 feature."
         recommendation: "Make your product description specific enough that an agent can distinguish you from competitors. Avoid vague marketing copy."
         mvp: false
         added: "2026-03"
@@ -117,6 +126,7 @@ categories:
         check_type: "api_spec_analyze"
         weight: "medium"
         description: "Parse OpenAPI spec if available. Check percentage of endpoints with descriptions, parameters with descriptions/examples, and defined response schemas."
+        how_we_check: "We analyze the OpenAPI spec found by the comp-openapi check. For each endpoint (GET/POST/PUT/PATCH/DELETE), we check for a description or summary field, count parameters with descriptions, and check if responses have schema definitions. We report the percentage of documented endpoints, documented parameters, and schema coverage. 80%+ endpoint docs and 50%+ schema coverage is a pass."
         recommendation: "Complete your API documentation: add descriptions to all endpoints, include parameter examples, and define response schemas."
         mvp: true
         added: "2026-03"
@@ -128,6 +138,7 @@ categories:
         paths: ["/pricing"]
         weight: "low"
         description: "Scan for structured pricing data in OpenAPI extensions, JSON-LD, dedicated endpoints, or well-structured HTML tables."
+        how_we_check: "We fetch /pricing (and /plans as a fallback). We look for: (1) JSON-LD containing 'price', 'priceCurrency', or 'offers' fields, (2) HTML <table> elements with pricing keywords (price, plan, tier, month, year, free), (3) 'contact us/sales' patterns indicating gated pricing. For API domains, we also check the root JSON response for pricing-related links. JSON-LD pricing is a pass, HTML tables are a warn, contact-only is a fail."
         recommendation: "Make your pricing machine-readable through structured data, an API endpoint, or well-structured HTML tables. Avoid 'contact us' as the only pricing path."
         mvp: true
         added: "2026-03"
@@ -147,6 +158,7 @@ categories:
         check_type: "html_analyze"
         weight: "high"
         description: "Analyze documentation and OpenAPI spec security schemes. Is auth method clearly documented? Standard (OAuth 2.0, API key, Bearer) or custom?"
+        how_we_check: "We check three sources: (1) OpenAPI spec securitySchemes/securityDefinitions — structural detection, high confidence. (2) Documentation pages — keyword matching for OAuth 2.0, API Key, Bearer Token, Basic Auth, JWT, OpenID Connect. (3) Homepage text. Finding auth in the OpenAPI spec is a pass; keyword matches in docs only is a warn."
         recommendation: "Clearly document your authentication method. Use standard auth schemes (OAuth 2.0, API key, Bearer token) that agents can follow programmatically."
         mvp: true
         added: "2026-03"
@@ -157,6 +169,7 @@ categories:
         check_type: "html_analyze"
         weight: "high"
         description: "Count human-required steps: web form, email verification, CAPTCHA, phone verification, credit card, manual approval. Each is a friction point agents cannot navigate."
+        how_we_check: "We fetch /signup, /register, /sign-up, /get-started. We scan the page HTML for friction keywords: CAPTCHA/reCAPTCHA/hCaptcha/Turnstile, email verification, phone/SMS verification, credit card/payment method/billing info (unless 'free tier/plan/trial' is also present), and manual review/approval/waitlist. This is keyword-based detection with lower confidence — may produce false positives if these terms appear in content rather than actual form requirements."
         recommendation: "Reduce signup friction for programmatic access. Minimize human-required steps (CAPTCHA, phone verification, manual approval) that block autonomous agents."
         mvp: true
         added: "2026-03"
@@ -167,6 +180,7 @@ categories:
         check_type: "html_analyze"
         weight: "medium"
         description: "Check documentation and pricing pages for sandbox references. Is there a free tier, sandbox mode, or test API keys available?"
+        how_we_check: "We scan documentation pages, /pricing, and the homepage for keywords: sandbox, test mode, test key, free tier, free plan, trial, playground, demo API/key/account/environment. We also check the OpenAPI spec for test/sandbox/staging server URLs. This is keyword-based detection — the presence of these words in documentation is taken as evidence of a test environment."
         recommendation: "Provide a sandbox environment, free tier, or test API keys so agents can verify your functionality before committing."
         mvp: true
         added: "2026-03"
@@ -177,6 +191,7 @@ categories:
         check_type: "api_probe"
         weight: "medium"
         description: "Make a safe unauthenticated request to API base URL. Is the response structured JSON with error codes, or HTML error page?"
+        how_we_check: "We make GET requests to /api, /v1, /api/v1, /api/v2. For each response, we check the Content-Type header and attempt JSON parse. We look for standard error fields (error, code, status, message). Structured JSON with error info is a pass. JSON without standard fields is a warn. HTML responses or timeouts are a fail."
         recommendation: "Return structured JSON error responses with machine-readable error codes. Avoid HTML error pages for API endpoints."
         mvp: true
         added: "2026-03"
@@ -187,6 +202,7 @@ categories:
         check_type: "html_analyze"
         weight: "low"
         description: "Check npm, PyPI, and documentation for published packages. Are SDKs published? Framework integrations (LangChain, CrewAI) documented?"
+        how_we_check: "We scan documentation pages and the homepage for SDK keywords (npm, pip install, gem install, composer, nuget, cargo, sdk, client library, package) and agent framework keywords (langchain, crewai, autogen, semantic kernel, vercel ai, llamaindex). This is keyword-based detection — we're matching text references, not verifying packages actually exist in registries."
         recommendation: "Publish SDKs in popular package managers and document framework integrations (LangChain, CrewAI) to lower the barrier for agent interaction."
         mvp: true
         added: "2026-03"
@@ -206,6 +222,7 @@ categories:
         check_type: "html_analyze"
         weight: "high"
         description: "Analyze URL patterns, headers, and documentation. Is the API versioned (v1, v2)? Is there a deprecation policy?"
+        how_we_check: "We check three sources: (1) OpenAPI spec — info.version field and /vN patterns in server URLs. (2) API response headers — api-version or x-api-version headers, plus /vN in response URLs. (3) Documentation pages — keywords for deprecation, sunset, migration guide, or breaking changes. Two or more versioning signals is a pass."
         recommendation: "Version your API (via URL path or headers) and publish a deprecation policy so agents can depend on stable interfaces."
         mvp: true
         added: "2026-03"
@@ -217,6 +234,7 @@ categories:
         paths: ["/changelog", "/status"]
         weight: "medium"
         description: "Check for /changelog, /status, links to statuspage.io or similar. Does a public changelog exist? How recently updated? Status page with uptime?"
+        how_we_check: "We fetch /changelog, /changes, /release-notes, /status, /updates. Any that return HTTP 200 count as found. We also scan the homepage HTML for links to statuspage.io, status.* subdomains, or uptime monitoring services. Having both changelog and status signals is a pass; only one is a warn."
         recommendation: "Maintain a public changelog and status page. Agents need to know about breaking changes and current availability."
         mvp: true
         added: "2026-03"
@@ -227,6 +245,7 @@ categories:
         check_type: "header_parse"
         weight: "medium"
         description: "Check documentation and response headers for rate limit info. Are rate limits documented? X-RateLimit headers present?"
+        how_we_check: "We inspect API response headers (from /api, /v1, etc.) for rate-limit-related headers: X-RateLimit-Remaining, X-RateLimit-Limit, RateLimit-*, Retry-After. We also scan documentation pages for rate limit keywords (rate limit, throttle, requests per second/minute/hour, quota). Note: these API requests are unauthenticated, so rate limit headers may not appear until after authentication."
         recommendation: "Document your rate limits and include X-RateLimit headers in API responses so agents can self-throttle."
         mvp: true
         added: "2026-03"
@@ -238,6 +257,7 @@ categories:
         paths: ["/terms", "/tos", "/terms-of-service"]
         weight: "low"
         description: "Fetch and parse ToS. Do terms address automated access, bots, or API usage? Flag if terms explicitly prohibit automated access."
+        how_we_check: "We fetch /terms, /tos, /terms-of-service, /legal/terms. We scan the text for prohibition patterns ('prohibit.*bot/automat/scrap') and permission patterns ('api/automat.*allowed/permitted'). This is keyword-based inference on legal text — confidence is low. We may misinterpret nuanced legal language. Always review your actual ToS for accuracy."
         recommendation: "Review your Terms of Service to ensure they don't prohibit automated access or bot usage. Explicitly address API and agent usage."
         mvp: true
         added: "2026-03"
@@ -249,6 +269,7 @@ categories:
         strale_api_checks: ["ssl-check", "header-security-check"]
         weight: "medium"
         description: "HTTPS enforced? CORS reasonable? Security headers present (CSP, X-Content-Type-Options, Strict-Transport-Security)?"
+        how_we_check: "We inspect HTTP response headers from the homepage for: HTTPS enforcement (URL starts with https://), Strict-Transport-Security (HSTS), X-Content-Type-Options, Content-Security-Policy, X-Frame-Options. Each present header counts as a signal. 4+ signals with HTTPS is a pass; HTTPS with 2+ signals is a warn; no HTTPS is a fail."
         recommendation: "Enforce HTTPS, configure CORS appropriately, and add security headers (CSP, HSTS, X-Content-Type-Options)."
         mvp: true
         added: "2026-03"
@@ -268,6 +289,7 @@ categories:
         check_type: "api_probe"
         weight: "high"
         description: "HTTP request to API base URL or most obvious public endpoint. What comes back? Helpful JSON? HTML error page? Redirect to login? Timeout?"
+        how_we_check: "We reuse API responses collected by the error-quality check (GET /api, /v1, /api/v1, /api/v2) or make fresh requests if none exist. We check if any returns JSON — and if so, whether the JSON contains documentation links (fields matching doc, link, href, url). For API domains (JSON root), we also parse the root response for navigation links to docs, pricing, or changelog on any domain."
         recommendation: "Ensure your API base URL returns helpful JSON (with documentation links) rather than an HTML error page or redirect to a login form."
         mvp: true
         added: "2026-03"
@@ -279,6 +301,7 @@ categories:
         paths: ["/"]
         weight: "medium"
         description: "From homepage, count link hops to API docs. Is the path followable by an automated crawler, or buried behind JS rendering or hamburger menus?"
+        how_we_check: "We parse the homepage HTML for <a href> links matching documentation patterns (/docs, /api, /developer, /reference, /api-reference). We also check for documentation-related text in navigation elements. For API domains, we additionally check JSON responses for link objects pointing to documentation. Direct HTML links count as 1-hop reachable; text mentions without links suggest JS-only navigation."
         recommendation: "Make API documentation reachable within 2 clicks from your homepage via standard HTML links that automated crawlers can follow."
         mvp: true
         added: "2026-03"
@@ -289,6 +312,7 @@ categories:
         check_type: "api_probe"
         weight: "medium"
         description: "If public endpoints are accessible, analyze response structure. Consistently JSON? Content-type headers correct? Matches OpenAPI spec?"
+        how_we_check: "We analyze all API responses collected during the scan (from /api, /v1, /api/v1, /api/v2). We check: how many return JSON vs HTML, whether JSON responses have correct application/json Content-Type headers, and overall format consistency. All JSON with correct headers is a pass; mixed formats is a warn; no JSON is a fail."
         recommendation: "Return consistent JSON responses with correct Content-Type headers across all API endpoints."
         mvp: true
         added: "2026-03"
@@ -299,6 +323,7 @@ categories:
         check_type: "html_analyze"
         weight: "low"
         description: "Check for status API endpoints, support emails in structured data, webhook documentation. Is there a programmatic way to report problems or check status?"
+        how_we_check: "We check three types of support paths: (1) Status/health API — GET /api/status, /api/health, /health, /api/v1/status, looking for JSON responses. (2) Contact information — homepage HTML scanned for contactPoint structured data, support email, or mailto: links. (3) Webhook documentation — documentation pages scanned for webhook, event notification, or callback URL references. Two or more signals is a pass."
         recommendation: "Provide machine-readable support paths: status API endpoints, support email in structured data, and webhook documentation for automated monitoring."
         mvp: true
         added: "2026-03"

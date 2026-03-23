@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RadarChart from "@/components/RadarChart";
 import CategoryBadge from "@/components/CategoryBadge";
-import CheckDetail from "@/components/CheckDetail";
+import CheckDetail, { CategoryProbeSummary } from "@/components/CheckDetail";
 import ActionPlan from "@/components/ActionPlan";
 import ShareBar from "@/components/ShareBar";
 import SubscribeForm from "@/components/SubscribeForm";
@@ -217,6 +217,7 @@ export default function ResultsView() {
                   {cat.checks.map((check) => (
                     <CheckDetail key={check.check_id} check={check} />
                   ))}
+                  <CategoryProbeSummary checks={cat.checks} />
                 </div>
               )}
             </div>
