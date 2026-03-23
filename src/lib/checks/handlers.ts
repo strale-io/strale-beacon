@@ -1190,6 +1190,123 @@ function extractCrossDomainLinks(json: unknown, ctx: ScanContext, sourceUrl: str
   }
 }
 
+// ─── Content Negotiation ─────────────────────────────────────────────────────
+
+export async function checkContentNegotiation(ctx: ScanContext, check: CheckDefinition): Promise<CheckResult> {
+  const probes: Probe[] = [];
+  const testUrl = ctx.openapiUrl || ctx.baseUrl;
+
+  // Standard request (already cached most likely)
+  const standard = await beaconFetch(testUrl);
+  probes.push(toProbe(standard));
+  const standardType = standard.headers["content-type"]?.split(";")[0].trim() || "";
+
+  // Request with Accept: text/markdown
+  const markdown = await beaconFetch(testUrl, { headers: { Accept: "text/markdown" } });
+  probes.push({ ...toProbe(markdown), method: "GET (Accept: text/markdown)" });
+  const markdownType = markdown.headers["content-type"]?.split(";")[0].trim() || "";
+
+  // Check Vary header
+  const varyHeader = standard.headers["vary"] || markdown.headers["vary"] || "";
+  const hasVaryAccept = varyHeader.toLowerCase().includes("accept");
+
+  // Determine result
+  const formatChanged = markdownType !== standardType && markdownType.includes("markdown");
+
+  if (formatChanged) {
+    return makeResult(check, "pass",
+      `Content negotiation supported — requesting text/markdown returns ${markdownType} instead of ${standardType}.`,
+      { probes, details: { standardType, markdownType, varyAccept: hasVaryAccept } }
+    );
+  }
+
+  if (hasVaryAccept) {
+    return makeResult(check, "pass",
+      `Vary: Accept header present, indicating content negotiation is supported. Standard response: ${standardType}.`,
+      { probes, details: { standardType, markdownType, varyAccept: true } }
+    );
+  }
+
+  // Also try Accept: text/html as secondary signal
+  const html = await beaconFetch(testUrl, { headers: { Accept: "text/html" } });
+  probes.push({ ...toProbe(html), method: "GET (Accept: text/html)" });
+  const htmlType = html.headers["content-type"]?.split(";")[0].trim() || "";
+
+  if (htmlType !== standardType && (htmlType.includes("html") || standardType.includes("json"))) {
+    return makeResult(check, "pass",
+      `Content negotiation detected — responds differently to Accept: text/html (${htmlType}) vs default (${standardType}).`,
+      { probes, details: { standardType, htmlType, varyAccept: hasVaryAccept } }
+    );
+  }
+
+  return makeResult(check, "warn",
+    `No content negotiation detected — returns ${standardType} regardless of Accept header. Supporting text/markdown would make responses easier for LLMs to consume.`,
+    { probes, confidence: "high", details: { standardType, markdownType, htmlType, varyAccept: false } }
+  );
+}
+
+// ─── Content Freshness Signals ───────────────────────────────────────────────
+
+export async function checkContentFreshness(ctx: ScanContext, check: CheckDefinition): Promise<CheckResult> {
+  const probes: Probe[] = [];
+  const signals: string[] = [];
+
+  // Check the homepage/root response
+  const homepageProbe = await ensureHomepage(ctx);
+  if (homepageProbe) probes.push(toProbe(homepageProbe));
+
+  const headers = ctx.homepageHeaders || {};
+
+  // Check freshness headers
+  if (headers["last-modified"]) signals.push(`Last-Modified: ${headers["last-modified"]}`);
+  if (headers["etag"]) signals.push(`ETag: ${headers["etag"]}`);
+  if (headers["age"]) signals.push(`Age: ${headers["age"]}`);
+
+  const cacheControl = headers["cache-control"] || "";
+  if (cacheControl && !cacheControl.includes("no-store") && cacheControl !== "no-cache") {
+    signals.push(`Cache-Control: ${cacheControl}`);
+  }
+
+  // Also check OpenAPI/docs endpoint if available
+  const secondaryUrl = ctx.openapiUrl || (ctx.docUrls.length > 0 ? ctx.docUrls[0] : null);
+  if (secondaryUrl) {
+    const secResult = await beaconFetch(secondaryUrl);
+    probes.push(toProbe(secResult));
+    if (secResult.ok) {
+      if (secResult.headers["last-modified"]) signals.push(`Last-Modified on ${secondaryUrl.replace(ctx.baseUrl, "")}: ${secResult.headers["last-modified"]}`);
+      if (secResult.headers["etag"]) signals.push(`ETag on ${secondaryUrl.replace(ctx.baseUrl, "")}: ${secResult.headers["etag"]}`);
+    }
+  }
+
+  // Check JSON body for timestamp fields
+  if (ctx.homepageHtml) {
+    try {
+      const json = JSON.parse(ctx.homepageHtml);
+      if (typeof json === "object" && json !== null) {
+        const timestampKeys = ["dateModified", "lastModified", "updated_at", "updatedAt", "last_updated", "lastUpdated", "modified"];
+        for (const key of timestampKeys) {
+          if (key in json && json[key]) {
+            signals.push(`Body field "${key}": ${String(json[key]).substring(0, 40)}`);
+            break; // one is enough
+          }
+        }
+      }
+    } catch { /* not JSON */ }
+  }
+
+  if (signals.length > 0) {
+    return makeResult(check, "pass",
+      `Freshness signals found: ${signals.join("; ")}.`,
+      { probes, details: { signals } }
+    );
+  }
+
+  return makeResult(check, "warn",
+    `No freshness signals found — no Last-Modified, ETag, or Cache-Control headers, and no timestamp fields in response body. Agents can't determine when content was last updated.`,
+    { probes, confidence: "high" }
+  );
+}
+
 // ─── Handler Dispatch ────────────────────────────────────────────────────────
 
 const CHECK_HANDLERS: Record<string, (ctx: ScanContext, check: CheckDefinition) => Promise<CheckResult>> = {
@@ -1218,6 +1335,8 @@ const CHECK_HANDLERS: Record<string, (ctx: ScanContext, check: CheckDefinition) 
   "ax-response-consistency": checkResponseConsistency,
   "ax-support-paths": checkSupportPaths,
   "ax-mcp-functional": checkMcpFunctional,
+  "comp-content-negotiation": checkContentNegotiation,
+  "stab-content-freshness": checkContentFreshness,
 };
 
 /** Run a single check by its definition. */

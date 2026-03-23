@@ -399,6 +399,34 @@ categories:
         added: "2026-03"
         last_reviewed: "2026-03"
 
+      - id: "comp-content-negotiation"
+        name: "Content Negotiation"
+        check_type: "content_negotiation"
+        weight: "medium"
+        description: "Whether the API serves different formats based on the Accept header"
+        how_we_check: "Sends requests with Accept: text/markdown and Accept: text/html, compares the response Content-Type to a standard request, and checks for a Vary: Accept header."
+        recommendation: "Add content negotiation to serve markdown when agents request it via Accept: text/markdown."
+        fix:
+          what: "Add content negotiation to serve markdown when requested"
+          why: "LLMs can consume markdown directly without JSON parsing. Supporting Accept: text/markdown makes your API easier for agents to use."
+          effort: "medium"
+          impact: "medium"
+          example_before: |
+            GET /api/welcome
+            Accept: text/markdown
+            → Content-Type: application/json
+            → {"message": "Welcome to the API"}
+          example_after: |
+            GET /api/welcome
+            Accept: text/markdown
+            → Content-Type: text/markdown
+            → # Welcome to the API
+            → Available endpoints: ...
+          verification: "curl -H 'Accept: text/markdown' https://your-api.com/ — confirm markdown Content-Type in response"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
     thresholds:
       green: "OpenAPI spec present AND >80% endpoint documentation completeness"
       yellow: "Some API documentation exists but incomplete or poorly structured"
@@ -724,6 +752,33 @@ categories:
             Referrer-Policy: strict-origin-when-cross-origin
             Content-Security-Policy: default-src 'self'
           verification: "curl -sI https://yourdomain.com | grep -i 'strict-transport-security' should return a header"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "stab-content-freshness"
+        name: "Content Freshness Signals"
+        check_type: "content_freshness"
+        weight: "low"
+        description: "Whether API responses include headers that help agents cache and detect staleness"
+        how_we_check: "Checks for Last-Modified, ETag, Cache-Control, and Age headers on root and documentation responses, plus timestamp fields in JSON response bodies."
+        recommendation: "Add Last-Modified and ETag headers to help agents cache responses and detect when content changes."
+        fix:
+          what: "Add freshness headers to your API responses"
+          why: "Last-Modified and ETag headers tell agents when your content last changed, enabling efficient caching and staleness detection."
+          effort: "low"
+          impact: "medium"
+          example_before: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            → (no freshness headers)
+          example_after: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            Last-Modified: Sat, 22 Mar 2026 14:30:00 GMT
+            ETag: "a1b2c3d4"
+            Cache-Control: public, max-age=3600
+          verification: "curl -I https://your-api.com/ — check for Last-Modified, ETag, or Cache-Control headers"
         mvp: true
         added: "2026-03"
         last_reviewed: "2026-03"

@@ -18,7 +18,7 @@ export interface FetchResult {
  */
 export async function beaconFetch(
   url: string,
-  options: { timeoutMs?: number; maxBodyBytes?: number } = {}
+  options: { timeoutMs?: number; maxBodyBytes?: number; headers?: Record<string, string> } = {}
 ): Promise<FetchResult> {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, maxBodyBytes = 2 * 1024 * 1024 } = options;
 
@@ -31,6 +31,7 @@ export async function beaconFetch(
       headers: {
         "User-Agent": USER_AGENT,
         Accept: "text/html,application/json,application/xml,text/plain,*/*",
+        ...options.headers,
       },
       signal: controller.signal,
       redirect: "follow",

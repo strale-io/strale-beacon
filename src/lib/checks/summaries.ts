@@ -81,6 +81,8 @@ function comprehensionSummary(cat: CategoryResult): string {
     }
     if (schemaDrift?.status === "pass") parts.push("no schema drift detected");
     if (docs?.status === "pass") parts.push("docs publicly accessible");
+    const contentNeg = findCheck(cat.checks, "content-negotiation");
+    if (contentNeg?.status === "pass") parts.push("content negotiation supported");
     return `Agents can understand this API — ${parts.join(", ")}.`;
   }
 
@@ -144,6 +146,8 @@ function stabilitySummary(cat: CategoryResult): string {
     if (changelog?.status === "pass") parts.push("changelog active");
     if (rateLimit?.status === "pass") parts.push("rate limits documented");
     if (security?.status === "pass") parts.push("security headers present");
+    const freshness = findCheck(cat.checks, "content-freshness");
+    if (freshness?.status === "pass") parts.push("freshness signals present");
     return `Agents can depend on this product — ${parts.join(", ")}.`;
   }
 
@@ -229,6 +233,8 @@ const ACTION_TITLES: Record<string, string> = {
   "exp-support-path": "Provide a programmatic way to report issues",
   "exp-mcp-functional": "Ensure your MCP server handles initialize and tools/list",
   "ax-mcp-functional": "Ensure your MCP server handles initialize and tools/list",
+  "comp-content-negotiation": "Add content negotiation to serve markdown when requested",
+  "stab-content-freshness": "Add freshness headers (Last-Modified, ETag) to responses",
 };
 
 export function getActionTitle(checkId: string, fallbackName: string): string {
