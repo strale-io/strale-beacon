@@ -93,7 +93,7 @@ export default function ActionPlan({ result }: ActionPlanProps) {
           href="https://strale.dev"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-3 px-4 py-2 bg-brand text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors"
+          className="inline-block mt-3 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors"
         >
           Explore Strale →
         </a>

@@ -57,12 +57,12 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
           placeholder="you@company.com"
           required
           disabled={status === "submitting"}
-          className="flex-1 h-9 px-3 text-sm rounded-md border border-border bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent disabled:opacity-50"
+          className="flex-1 h-9 px-3 text-sm rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="h-9 px-4 bg-brand text-white text-sm font-medium rounded-md hover:bg-brand-hover transition-colors disabled:opacity-50 whitespace-nowrap"
+          className="h-9 px-4 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 whitespace-nowrap"
         >
           {status === "submitting" ? "..." : "Notify me"}
         </button>

@@ -130,7 +130,7 @@ export default function ResultsView() {
             </p>
             <a
               href="/"
-              className="inline-block mt-4 px-4 py-2 bg-brand text-white text-sm font-medium rounded-lg hover:bg-brand-hover transition-colors"
+              className="inline-block mt-4 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors"
             >
               Scan a URL
             </a>
@@ -300,7 +300,7 @@ export default function ResultsView() {
               href={`/api/report/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-lg border border-border bg-background text-foreground hover:bg-surface transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-[4px] border border-border-strong bg-background text-foreground hover:bg-surface transition-colors"
             >
               <span className="text-text-muted">{"{ }"}</span>
               JSON Report

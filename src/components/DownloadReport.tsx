@@ -36,7 +36,7 @@ export default function DownloadReport({ slug, domain }: DownloadReportProps) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border bg-background text-foreground hover:bg-surface transition-colors disabled:opacity-50"
+      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-[4px] border border-border-strong bg-background text-foreground hover:bg-surface transition-colors disabled:opacity-50"
     >
       {loading ? (
         <>
