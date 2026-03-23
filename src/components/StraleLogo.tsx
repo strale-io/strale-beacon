@@ -1,8 +1,10 @@
 /**
  * Canonical Strale logo component.
  *
- * Matches strale.dev exactly: "strale" in lowercase, Inter 600, tracking-tight.
- * Beacon variant: "strale" in dark + "beacon" in grey (#9CA3AF), same weight.
+ * Matches strale.dev exactly: "strale" in text-3xl (30px), font-semibold (600),
+ * tracking-tight (-0.025em), leading-none. Extracted from strale-frontend Header.tsx.
+ *
+ * Beacon variant: "strale" in dark + "beacon" in grey (#9CA3AF), same size/weight.
  */
 
 interface StraleLogoProps {
@@ -19,12 +21,12 @@ export default function StraleLogo({
   const color = variant === "dark" ? "text-foreground" : "text-white";
 
   return (
-    <span className={`inline-flex items-baseline gap-1.5 ${className}`}>
-      <span className={`text-[20px] font-semibold tracking-tight leading-none ${color}`}>
+    <span className={`inline-flex items-baseline gap-2 ${className}`}>
+      <span className={`text-3xl font-semibold tracking-tight leading-none ${color}`}>
         strale
       </span>
       {showBeacon && (
-        <span className="text-[20px] font-semibold tracking-tight leading-none text-text-muted">
+        <span className="text-3xl font-semibold tracking-tight leading-none text-text-muted">
           beacon
         </span>
       )}

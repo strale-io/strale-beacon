@@ -90,14 +90,14 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="min-h-screen flex flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-8">
         <h1 className="text-3xl sm:text-4xl lg:text-[3.25rem] font-medium text-foreground text-center tracking-[-0.03em] leading-[1.1] max-w-2xl">
           Is your product ready for AI agents?
         </h1>

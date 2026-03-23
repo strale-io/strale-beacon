@@ -102,7 +102,7 @@ export default function ResultsView() {
     return (
       <div className="flex flex-col min-h-full">
         <Header />
-        <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-8">
+        <main className="flex-1 w-full max-w-[1152px] mx-auto px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 w-48 bg-muted rounded mx-auto mb-2" />
             <div className="h-4 w-64 bg-muted rounded mx-auto mb-8" />
@@ -155,7 +155,7 @@ export default function ResultsView() {
     <div className="flex flex-col min-h-full">
       <Header />
 
-      <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 py-8">
+      <main className="flex-1 w-full max-w-[1152px] mx-auto px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {result.domain}
