@@ -1,0 +1,310 @@
+version: "1.0"
+last_updated: "2026-03"
+
+categories:
+  discoverability:
+    label: "Discoverability"
+    question: "Can agents find you?"
+    checks:
+      - id: "disc-llms-txt"
+        name: "llms.txt"
+        check_type: "file_exists_and_parse"
+        paths: ["/llms.txt", "/llms-full.txt"]
+        weight: "high"
+        description: "Check for llms.txt presence and quality. Does it contain structured capability descriptions?"
+        recommendation: "Add an llms.txt file to your root domain describing your product's capabilities in a machine-readable format."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "disc-ai-crawler-policy"
+        name: "AI Crawler Policy"
+        check_type: "file_exists_and_parse"
+        paths: ["/robots.txt"]
+        weight: "medium"
+        description: "Parse robots.txt for rules addressing known AI crawlers: GPTBot, ClaudeBot, Claude-Web, PerplexityBot, Google-Extended, Amazonbot, CCBot, Bytespider, cohere-ai, Diffbot."
+        recommendation: "Review your robots.txt to ensure AI crawlers can access your content. Consider explicitly allowing crawlers like GPTBot and ClaudeBot."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "disc-structured-data"
+        name: "Structured Data"
+        check_type: "html_analyze"
+        paths: ["/"]
+        weight: "medium"
+        description: "Parse homepage HTML for JSON-LD, RDFa, or Microdata. Look for Schema.org types: SoftwareApplication, WebAPI, APIReference, Product."
+        recommendation: "Add structured data (JSON-LD) to your homepage describing your product using Schema.org types like SoftwareApplication or WebAPI."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "disc-sitemap"
+        name: "Sitemap & Crawlability"
+        check_type: "file_exists_and_parse"
+        paths: ["/sitemap.xml"]
+        weight: "low"
+        description: "Does sitemap.xml exist? Does it include API documentation pages, changelog, and pricing? Or only marketing/blog pages?"
+        recommendation: "Add a sitemap.xml that includes your API documentation, changelog, and developer-facing pages — not just marketing content."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "disc-mcp-a2a"
+        name: "MCP Server / A2A Agent Card"
+        check_type: "file_exists_and_parse"
+        paths: ["/.well-known/mcp.json", "/.well-known/agent.json"]
+        weight: "high"
+        description: "Check for machine-discoverable agent interaction endpoints (MCP server manifest, A2A agent card)."
+        recommendation: "Publish an MCP server manifest at /.well-known/mcp.json or an A2A agent card at /.well-known/agent.json to enable direct agent discovery."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "disc-registry-presence"
+        name: "Registry Presence"
+        check_type: "api_probe"
+        weight: "medium"
+        description: "Query Smithery, MCP Market, npm for the product name or domain."
+        recommendation: "List your product on agent registries like Smithery or MCP Market to increase discoverability."
+        mvp: false
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "llms.txt present AND (MCP/A2A endpoint OR structured data with capability types)"
+      yellow: "At least one discovery mechanism present but incomplete"
+      red: "No agent-facing discovery mechanisms found"
+
+  comprehension:
+    label: "Comprehension"
+    question: "Can agents understand what you do?"
+    checks:
+      - id: "comp-openapi"
+        name: "OpenAPI / Swagger Specification"
+        check_type: "file_exists_and_parse"
+        paths: ["/openapi.json", "/swagger.json", "/api/openapi.json", "/docs/openapi.json", "/api-docs"]
+        weight: "high"
+        description: "Check common locations for OpenAPI/Swagger spec. Validate format and version (2.0/3.0/3.1)."
+        recommendation: "Publish an OpenAPI specification at a standard location (/openapi.json) so agents can understand your API surface."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "comp-api-docs"
+        name: "API Documentation Accessibility"
+        check_type: "html_analyze"
+        paths: ["/docs", "/api", "/developers", "/api-reference"]
+        weight: "medium"
+        description: "Is documentation publicly accessible without signup? Is it rendered as parseable HTML or gated behind JS-heavy rendering or auth?"
+        recommendation: "Make your API documentation publicly accessible without requiring signup. Ensure it renders as parseable HTML, not behind heavy JavaScript or authentication gates."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "comp-description-specificity"
+        name: "Description Specificity"
+        check_type: "ai_analyze"
+        weight: "medium"
+        description: "Send product self-description to Claude API for evaluation. Is it specific enough to distinguish from competitors? Produces rewrite suggestion."
+        recommendation: "Make your product description specific enough that an agent can distinguish you from competitors. Avoid vague marketing copy."
+        mvp: false
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "comp-endpoint-completeness"
+        name: "Endpoint Documentation Completeness"
+        check_type: "api_spec_analyze"
+        weight: "medium"
+        description: "Parse OpenAPI spec if available. Check percentage of endpoints with descriptions, parameters with descriptions/examples, and defined response schemas."
+        recommendation: "Complete your API documentation: add descriptions to all endpoints, include parameter examples, and define response schemas."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "comp-machine-pricing"
+        name: "Machine-Readable Pricing"
+        check_type: "html_analyze"
+        paths: ["/pricing"]
+        weight: "low"
+        description: "Scan for structured pricing data in OpenAPI extensions, JSON-LD, dedicated endpoints, or well-structured HTML tables."
+        recommendation: "Make your pricing machine-readable through structured data, an API endpoint, or well-structured HTML tables. Avoid 'contact us' as the only pricing path."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "OpenAPI spec present AND >80% endpoint documentation completeness"
+      yellow: "Some API documentation exists but incomplete or poorly structured"
+      red: "No machine-readable API description found"
+
+  usability:
+    label: "Usability"
+    question: "Can agents interact with you?"
+    checks:
+      - id: "use-auth-docs"
+        name: "Authentication Documentation"
+        check_type: "html_analyze"
+        weight: "high"
+        description: "Analyze documentation and OpenAPI spec security schemes. Is auth method clearly documented? Standard (OAuth 2.0, API key, Bearer) or custom?"
+        recommendation: "Clearly document your authentication method. Use standard auth schemes (OAuth 2.0, API key, Bearer token) that agents can follow programmatically."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "use-signup-friction"
+        name: "Signup Friction"
+        check_type: "html_analyze"
+        weight: "high"
+        description: "Count human-required steps: web form, email verification, CAPTCHA, phone verification, credit card, manual approval. Each is a friction point agents cannot navigate."
+        recommendation: "Reduce signup friction for programmatic access. Minimize human-required steps (CAPTCHA, phone verification, manual approval) that block autonomous agents."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "use-sandbox"
+        name: "Sandbox / Test Environment"
+        check_type: "html_analyze"
+        weight: "medium"
+        description: "Check documentation and pricing pages for sandbox references. Is there a free tier, sandbox mode, or test API keys available?"
+        recommendation: "Provide a sandbox environment, free tier, or test API keys so agents can verify your functionality before committing."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "use-error-quality"
+        name: "Error Response Quality"
+        check_type: "api_probe"
+        weight: "medium"
+        description: "Make a safe unauthenticated request to API base URL. Is the response structured JSON with error codes, or HTML error page?"
+        recommendation: "Return structured JSON error responses with machine-readable error codes. Avoid HTML error pages for API endpoints."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "use-sdk"
+        name: "SDK & Integration Availability"
+        check_type: "html_analyze"
+        weight: "low"
+        description: "Check npm, PyPI, and documentation for published packages. Are SDKs published? Framework integrations (LangChain, CrewAI) documented?"
+        recommendation: "Publish SDKs in popular package managers and document framework integrations (LangChain, CrewAI) to lower the barrier for agent interaction."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "Standard auth documented AND sandbox/free tier available AND structured error responses"
+      yellow: "Some programmatic access available but friction points exist"
+      red: "No clear programmatic access path for agents"
+
+  stability:
+    label: "Stability"
+    question: "Can agents depend on you?"
+    checks:
+      - id: "stab-versioning"
+        name: "API Versioning"
+        check_type: "html_analyze"
+        weight: "high"
+        description: "Analyze URL patterns, headers, and documentation. Is the API versioned (v1, v2)? Is there a deprecation policy?"
+        recommendation: "Version your API (via URL path or headers) and publish a deprecation policy so agents can depend on stable interfaces."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "stab-changelog-status"
+        name: "Changelog & Status Signals"
+        check_type: "file_exists_and_parse"
+        paths: ["/changelog", "/status"]
+        weight: "medium"
+        description: "Check for /changelog, /status, links to statuspage.io or similar. Does a public changelog exist? How recently updated? Status page with uptime?"
+        recommendation: "Maintain a public changelog and status page. Agents need to know about breaking changes and current availability."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "stab-rate-limits"
+        name: "Rate Limit Documentation"
+        check_type: "header_parse"
+        weight: "medium"
+        description: "Check documentation and response headers for rate limit info. Are rate limits documented? X-RateLimit headers present?"
+        recommendation: "Document your rate limits and include X-RateLimit headers in API responses so agents can self-throttle."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "stab-tos-agents"
+        name: "Terms of Service — Agent Compatibility"
+        check_type: "html_analyze"
+        paths: ["/terms", "/tos", "/terms-of-service"]
+        weight: "low"
+        description: "Fetch and parse ToS. Do terms address automated access, bots, or API usage? Flag if terms explicitly prohibit automated access."
+        recommendation: "Review your Terms of Service to ensure they don't prohibit automated access or bot usage. Explicitly address API and agent usage."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "stab-security"
+        name: "Security Basics"
+        check_type: "header_parse"
+        strale_api_checks: ["ssl-check", "header-security-check"]
+        weight: "medium"
+        description: "HTTPS enforced? CORS reasonable? Security headers present (CSP, X-Content-Type-Options, Strict-Transport-Security)?"
+        recommendation: "Enforce HTTPS, configure CORS appropriately, and add security headers (CSP, HSTS, X-Content-Type-Options)."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "API versioned AND status page active AND rate limits documented AND HTTPS enforced"
+      yellow: "Some stability signals present but gaps in versioning, limits, or status"
+      red: "No versioning, no status page, no rate limit documentation"
+
+  agent-experience:
+    label: "Agent Experience"
+    question: "What happens when an agent shows up?"
+    checks:
+      - id: "ax-first-contact"
+        name: "First-Contact Response Quality"
+        check_type: "api_probe"
+        weight: "high"
+        description: "HTTP request to API base URL or most obvious public endpoint. What comes back? Helpful JSON? HTML error page? Redirect to login? Timeout?"
+        recommendation: "Ensure your API base URL returns helpful JSON (with documentation links) rather than an HTML error page or redirect to a login form."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "ax-doc-navigability"
+        name: "Documentation Navigability"
+        check_type: "html_analyze"
+        paths: ["/"]
+        weight: "medium"
+        description: "From homepage, count link hops to API docs. Is the path followable by an automated crawler, or buried behind JS rendering or hamburger menus?"
+        recommendation: "Make API documentation reachable within 2 clicks from your homepage via standard HTML links that automated crawlers can follow."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "ax-response-consistency"
+        name: "Response Format Consistency"
+        check_type: "api_probe"
+        weight: "medium"
+        description: "If public endpoints are accessible, analyze response structure. Consistently JSON? Content-type headers correct? Matches OpenAPI spec?"
+        recommendation: "Return consistent JSON responses with correct Content-Type headers across all API endpoints."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "ax-support-paths"
+        name: "Machine-Readable Support Paths"
+        check_type: "html_analyze"
+        weight: "low"
+        description: "Check for status API endpoints, support emails in structured data, webhook documentation. Is there a programmatic way to report problems or check status?"
+        recommendation: "Provide machine-readable support paths: status API endpoints, support email in structured data, and webhook documentation for automated monitoring."
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "API returns helpful JSON on first contact AND docs reachable in ≤2 hops AND consistent response format"
+      yellow: "Some agent-friendly responses but inconsistent or hard to navigate"
+      red: "Agent encounters HTML errors, login walls, or cannot find documentation"

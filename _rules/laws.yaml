@@ -1,0 +1,28 @@
+# Strale Beacon — Laws
+# Stripped down to the rules that matter for this project.
+
+supreme:
+  - id: LAW-001
+    name: "No Hardcoded Values"
+    rule: "All visual values (colors, spacing, radii, shadows, font sizes) must come from design tokens in _ui/tokens.yaml. No magic numbers in component code."
+
+  - id: LAW-002
+    name: "Tier Colors from Tokens"
+    rule: "Green/Yellow/Red tier indicators must use the tier color tokens exclusively. Never hardcode tier colors in components."
+
+  - id: LAW-003
+    name: "Data Accuracy"
+    rule: "Every check result shown to the user must reflect actual scan data. No placeholder or simulated results in production."
+
+locked:
+  - id: RULE-001
+    name: "Accessible Contrast"
+    rule: "All text must meet WCAG AA contrast ratios (4.5:1 for body, 3:1 for large text) against its background."
+
+  - id: RULE-002
+    name: "No Aggregate Score"
+    rule: "Beacon must never display an aggregate score. Only per-category tiers. This is a strategic constraint to avoid competing with Strale's SQS."
+
+  - id: RULE-003
+    name: "Strale Brand Consistency"
+    rule: "Use Inter font family, Strale spacing scale, and Strale border radius. Beacon is a sub-product, not a separate brand."

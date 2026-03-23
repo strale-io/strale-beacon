@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from "next/server";
+import { runScan } from "@/lib/checks/runner";
+import {
+  normalizeDomain,
+  domainToSlug,
+  upsertDomain,
+  findRecentScan,
+  storeScan,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { url, force } = body;
+
+    if (!url || typeof url !== "string") {
+      return NextResponse.json(
+        { error: "Missing required field: url" },
+        { status: 400 }
+      );
+    }
+
+    // Validate and normalize URL
+    let normalizedUrl: string;
+    try {
+      const withProtocol = url.match(/^https?:\/\//) ? url : `https://${url}`;
+      const parsed = new URL(withProtocol);
+
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        return NextResponse.json(
+          { error: "URL must use http or https protocol" },
+          { status: 400 }
+        );
+      }
+
+      const hostname = parsed.hostname;
+      if (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("172.") ||
+        hostname === "0.0.0.0"
+      ) {
+        return NextResponse.json(
+          { error: "Cannot scan localhost or private IP addresses" },
+          { status: 400 }
+        );
+      }
+
+      normalizedUrl = parsed.origin;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid URL format" },
+        { status: 400 }
+      );
+    }
+
+    const domain = normalizeDomain(normalizedUrl);
+    const slug = domainToSlug(domain);
+
+    // Check for cached result (unless force=true)
+    if (!force && isSupabaseConfigured()) {
+      const cached = await findRecentScan(domain);
+      if (cached) {
+        return NextResponse.json({
+          ...cached.results,
+          slug: cached.slug,
+          cached: true,
+        });
+      }
+    }
+
+    // Run the scan
+    const result = await runScan(normalizedUrl);
+
+    // Persist to Supabase
+    let finalSlug = slug;
+    if (isSupabaseConfigured()) {
+      try {
+        const domainRow = await upsertDomain(domain);
+        if (domainRow) {
+          finalSlug = await storeScan(domainRow.id, domain, result);
+        }
+      } catch (err) {
+        // Log but don't fail the scan — persistence is best-effort
+        console.error("Failed to persist scan:", err);
+      }
+    }
+
+    return NextResponse.json({ ...result, slug: finalSlug });
+  } catch (err) {
+    console.error("Scan error:", err);
+    return NextResponse.json(
+      {
+        error: "Scan failed",
+        message: err instanceof Error ? err.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}

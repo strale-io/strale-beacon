@@ -1,0 +1,50 @@
+# Strale Beacon — Component Registry
+# Lightweight registry for Beacon's focused component set
+
+components:
+  # Core visual
+  radar_chart:
+    description: "Five-axis radar chart — the signature visual. Displays category tiers with colored fills."
+    file: "src/components/RadarChart.tsx"
+    props: ["categories", "tiers"]
+    notes: "Must look good screenshotted on both dark and white backgrounds. Smooth lines, subtle gradient fills, gentle draw animation on load."
+
+  category_badge:
+    description: "Green/Yellow/Red tier indicator with label."
+    file: "src/components/CategoryBadge.tsx"
+    props: ["tier", "label", "summary"]
+    variants: ["green", "yellow", "red"]
+
+  # Scanning
+  scan_feed:
+    description: "Live scanning progress feed showing checks running in real time."
+    file: "src/components/ScanFeed.tsx"
+    props: ["checks", "status"]
+    notes: "Each line shows check name and result icon (checkmark, warning, X) as it completes. SSE-driven."
+
+  # Results
+  action_plan:
+    description: "Prioritized list of top 3-5 highest-impact fixes across all categories."
+    file: "src/components/ActionPlan.tsx"
+    props: ["actions"]
+
+  share_bar:
+    description: "Sticky share element with shareable link and social post generation."
+    file: "src/components/ShareBar.tsx"
+    props: ["url", "productName", "tierCount"]
+
+  # Layout
+  scan_input:
+    description: "URL input field with scan button. The primary CTA on the landing page."
+    file: "src/components/ScanInput.tsx"
+    props: ["onScan"]
+
+  category_detail:
+    description: "Expandable section showing detailed findings for one scan category."
+    file: "src/components/CategoryDetail.tsx"
+    props: ["category", "checks", "findings"]
+
+  footer:
+    description: "Strale-branded footer with marketplace link."
+    file: "src/components/Footer.tsx"
+    notes: "Built by the team behind Strale — the trust layer for the agent economy"

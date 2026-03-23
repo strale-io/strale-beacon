@@ -1,0 +1,34 @@
+# Project Manifest — Strale Beacon
+
+project:
+  name: "Strale Beacon"
+  description: "Free agent-readiness scanner for SaaS products"
+  version: "0.1.0"
+  url: "scan.strale.io"
+  parent_brand: "Strale"
+
+design_system: "beacon"
+
+audience:
+  primary: "SaaS product owners and CTOs who want to know if AI agents can discover and interact with their product"
+  secondary: "Developer advocates and DevRel teams optimizing for agent discoverability"
+
+product:
+  class: "diagnostic_tool"
+  thesis: "Beacon measures whether agents can find you. Strale's SQS measures how well you perform once they do."
+  voice:
+    tone: "Warm, accessible, data-forward"
+    density: "Information-dense on results page, minimal on landing page"
+    personality: "Helpful diagnostician — shows what's wrong AND how to fix it"
+
+tech:
+  framework: "Next.js (App Router)"
+  styling: "Tailwind CSS"
+  database: "Supabase"
+  deployment: "Vercel"
+  domain: "scan.strale.io"
+
+brand:
+  contact: "hello@strale.io"
+  website: "strale.dev"
+  footer: "Built by the team behind Strale — the trust layer for the agent economy"

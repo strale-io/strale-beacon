@@ -1,0 +1,37 @@
+# Strale Beacon
+
+> Free agent-readiness scanner for SaaS products and APIs
+
+Strale Beacon scans any URL and assesses how ready it is for AI agent discovery and interaction. It checks 20 signals across 5 categories: Discoverability, Comprehension, Usability, Stability, and Agent Experience.
+
+Each category receives a tier: Green (Ready), Yellow (Partial), or Red (Not Ready). There is no aggregate score.
+
+## API
+
+- Scan endpoint: POST https://scan.strale.io/api/scan
+  - Input: { "url": "https://example.com" }
+  - Output: Structured scan results with per-category tiers (green/yellow/red)
+  - Caching: Results are cached for 1 hour per domain. Pass { "force": true } to bypass cache.
+
+- Results endpoint: GET https://scan.strale.io/api/results/{slug}
+  - Output: Full scan results for a previously scanned domain
+  - Slug format: domain with dots replaced by hyphens (e.g., "stripe-com")
+
+- Subscribe endpoint: POST https://scan.strale.io/api/subscribe
+  - Input: { "email": "user@example.com" }
+  - Output: Subscription confirmation for score change notifications
+
+## Categories
+
+1. Discoverability — Can agents find you? (llms.txt, robots.txt AI crawler policy, structured data, sitemap, MCP/A2A endpoints)
+2. Comprehension — Can agents understand what you do? (OpenAPI spec, API docs accessibility, endpoint completeness, machine-readable pricing)
+3. Usability — Can agents interact with you? (auth documentation, signup friction, sandbox availability, error response quality, SDK availability)
+4. Stability — Can agents depend on you? (API versioning, changelog/status, rate limits, ToS agent compatibility, security headers)
+5. Agent Experience — What happens when an agent shows up? (first-contact response, doc navigability, response consistency, support paths)
+
+## Links
+
+- Landing page: https://scan.strale.io
+- Built by Strale: https://strale.dev
+- Strale marketplace: https://strale.dev
+- Contact: hello@strale.io

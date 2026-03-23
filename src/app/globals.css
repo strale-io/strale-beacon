@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #111827;
+  --brand-primary: hsl(225, 50%, 45%);
+  --brand-primary-hover: hsl(225, 50%, 38%);
+  --brand-primary-light: hsl(225, 50%, 95%);
+  --tier-green: #16A34A;
+  --tier-green-light: #F0FDF4;
+  --tier-green-border: #BBF7D0;
+  --tier-green-text: #15803D;
+  --tier-yellow: #CA8A04;
+  --tier-yellow-light: #FEFCE8;
+  --tier-yellow-border: #FEF08A;
+  --tier-yellow-text: #A16207;
+  --tier-red: #DC2626;
+  --tier-red-light: #FEF2F2;
+  --tier-red-border: #FECACA;
+  --tier-red-text: #B91C1C;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border-default: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --surface: #F9FAFB;
+  --muted: #F3F4F6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand-primary);
+  --color-brand-hover: var(--brand-primary-hover);
+  --color-brand-light: var(--brand-primary-light);
+  --color-tier-green: var(--tier-green);
+  --color-tier-green-light: var(--tier-green-light);
+  --color-tier-green-border: var(--tier-green-border);
+  --color-tier-green-text: var(--tier-green-text);
+  --color-tier-yellow: var(--tier-yellow);
+  --color-tier-yellow-light: var(--tier-yellow-light);
+  --color-tier-yellow-border: var(--tier-yellow-border);
+  --color-tier-yellow-text: var(--tier-yellow-text);
+  --color-tier-red: var(--tier-red);
+  --color-tier-red-light: var(--tier-red-light);
+  --color-tier-red-border: var(--tier-red-border);
+  --color-tier-red-text: var(--tier-red-text);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-border: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+@keyframes radar-draw {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

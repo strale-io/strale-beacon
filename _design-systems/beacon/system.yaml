@@ -1,0 +1,38 @@
+# Strale Beacon — Design System
+# Light-mode adaptation of Strale's dark-mode design system
+
+identity:
+  name: "Beacon"
+  parent: "Strale"
+  mode: "light"
+  description: "Data-forward, minimal-decoration design for agent-readiness scanning."
+
+relationship_to_strale:
+  shared:
+    - typography: "Inter (sans), JetBrains Mono (mono)"
+    - spacing_scale: "4px base unit"
+    - border_radius: "0.5rem default"
+    - logo: "Strale logo with 'Beacon' sub-product name"
+    - brand_primary: "Same hue, darkened for light-mode contrast"
+  different:
+    - background: "White/near-white surfaces (vs Strale's dark mode)"
+    - tier_colors: "Beacon-specific green/yellow/red for accessibility and radar chart clarity"
+    - density: "More information-dense than Strale's marketing pages"
+    - decoration: "Minimal — radar chart is the only visual centerpiece"
+    - tone: "Slightly warmer and more accessible than Strale's technical authority voice"
+
+principles:
+  - "Data-forward: the scan results are the content, not decoration"
+  - "Minimal chrome: no illustrations, no abstract graphics"
+  - "Screenshot-friendly: radar chart must look good on any background"
+  - "Accessible: WCAG AA contrast ratios throughout"
+  - "Fast: pages should feel instant"
+
+radar_chart:
+  notes:
+    - "Smooth lines, subtle gradient fills per tier color"
+    - "Gentle draw animation on load"
+    - "Must look good screenshotted on both dark Twitter backgrounds and white LinkedIn posts"
+    - "No aggregate score displayed — shape and tier count are the summary"
+
+tokens: "../_ui/tokens.yaml"
