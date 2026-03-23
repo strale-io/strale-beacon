@@ -3,9 +3,9 @@ interface ScoreRingProps {
   total: number;
 }
 
-function getTier(ready: number): "green" | "yellow" | "red" {
-  if (ready >= 5) return "green";
-  if (ready >= 3) return "yellow";
+function getTier(ready: number, total: number): "green" | "yellow" | "red" {
+  if (ready >= total) return "green";
+  if (ready >= Math.ceil(total / 2)) return "yellow";
   return "red";
 }
 
@@ -16,7 +16,7 @@ const TIER_STYLES = {
 };
 
 export default function ScoreRing({ ready, total }: ScoreRingProps) {
-  const tier = getTier(ready);
+  const tier = getTier(ready, total);
   const styles = TIER_STYLES[tier];
 
   return (

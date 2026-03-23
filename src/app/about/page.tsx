@@ -13,6 +13,7 @@ const CATEGORIES = [
   { name: "Usability", question: "Can agents interact with you?" },
   { name: "Stability", question: "Can agents depend on you?" },
   { name: "Agent Experience", question: "What happens when an agent shows up?" },
+  { name: "Transactability", question: "Can agents do business with you?" },
 ];
 
 export default function AboutPage() {
@@ -40,7 +41,7 @@ export default function AboutPage() {
           </p>
           <p>
             Beacon tells you exactly where you stand — and how to fix it. It runs 25 automated
-            checks across 5 categories and produces a detailed report with specific, actionable
+            checks across 6 categories and produces a detailed report with specific, actionable
             remediation steps.
           </p>
         </div>

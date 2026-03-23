@@ -25,6 +25,8 @@ export function categorySummary(cat: CategoryResult): string {
     case "agent_experience":
     case "agent-experience":
       return agentExperienceSummary(cat);
+    case "transactability":
+      return transactabilitySummary(cat);
     default:
       return defaultSummary(cat);
   }
@@ -196,6 +198,35 @@ function agentExperienceSummary(cat: CategoryResult): string {
   return `${good[0].toUpperCase() + good.slice(1)}, but ${bad}.`;
 }
 
+function transactabilitySummary(cat: CategoryResult): string {
+  const pricing = findCheck(cat.checks, "pricing-structured");
+  const signup = findCheck(cat.checks, "self-serve");
+  const checkout = findCheck(cat.checks, "checkout");
+  const billing = findCheck(cat.checks, "usage-billing");
+  const freeTier = findCheck(cat.checks, "free-tier");
+
+  if (cat.tier === "green") {
+    const parts: string[] = [];
+    if (pricing?.status === "pass") parts.push("machine-readable pricing");
+    if (signup?.status === "pass") parts.push("self-serve signup");
+    if (checkout?.status === "pass") parts.push("programmatic checkout");
+    if (freeTier?.status === "pass") parts.push("free tier available");
+    return `Agents can transact with this product — ${parts.join(", ")}.`;
+  }
+
+  if (cat.tier === "red") {
+    const missing: string[] = [];
+    if (pricing?.status === "fail") missing.push("no machine-readable pricing");
+    if (signup?.status === "fail") missing.push("no self-serve signup");
+    return `Agents can't do business here — ${missing.slice(0, 2).join(" and ")}.`;
+  }
+
+  // Yellow
+  const good = pricing?.status === "pass" ? "pricing is machine-readable" : signup?.status === "pass" ? "self-serve signup available" : "some transaction signals";
+  const bad = pricing?.status !== "pass" ? "pricing isn't machine-readable" : signup?.status !== "pass" ? "no self-serve onboarding" : "checkout isn't agent-compatible";
+  return `${good[0].toUpperCase() + good.slice(1)}, but ${bad}.`;
+}
+
 function defaultSummary(cat: CategoryResult): string {
   const passCount = cat.checks.filter((c) => c.status === "pass").length;
   const total = cat.checks.length;
@@ -235,6 +266,11 @@ const ACTION_TITLES: Record<string, string> = {
   "ax-mcp-functional": "Ensure your MCP server handles initialize and tools/list",
   "comp-content-negotiation": "Add content negotiation to serve markdown when requested",
   "stab-content-freshness": "Add freshness headers (Last-Modified, ETag) to responses",
+  "trans-pricing-structured": "Make your pricing machine-readable with Schema.org Offer markup",
+  "trans-self-serve-signup": "Enable self-serve signup with programmatic API key generation",
+  "trans-checkout-flow": "Implement agent-compatible checkout (Stripe ACP or API-based)",
+  "trans-usage-billing": "Add rate limit headers and usage metadata to API responses",
+  "trans-free-tier": "Offer a free tier or trial for agent evaluation",
 };
 
 export function getActionTitle(checkId: string, fallbackName: string): string {

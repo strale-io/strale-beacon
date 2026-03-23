@@ -955,3 +955,139 @@ categories:
       green: "API returns helpful JSON on first contact AND docs reachable in ≤2 hops AND consistent response format AND (MCP/A2A functional if discovered)"
       yellow: "Some agent-friendly responses but inconsistent or hard to navigate"
       red: "Agent encounters HTML errors, login walls, or cannot find documentation"
+
+  transactability:
+    label: "Transactability"
+    question: "Can agents do business with you?"
+    checks:
+      - id: "trans-pricing-structured"
+        name: "Machine-readable pricing"
+        check_type: "pricing_structured_data"
+        weight: "high"
+        description: "Whether pricing information is available in structured, machine-readable format"
+        how_we_check: "We check for structured pricing data in three places: (1) JSON-LD with Schema.org Offer/Product/PriceSpecification types, (2) pricing information in the OpenAPI spec, and (3) a dedicated pricing page with structured data. We also check the API root response for price/cost fields."
+        recommendation: "Add machine-readable pricing using Schema.org Offer markup or expose pricing through your API. Agents cannot evaluate your product against alternatives if pricing requires human interpretation of a visual pricing page."
+        fix:
+          what: "Add Schema.org Offer/PriceSpecification markup to your pricing page, or include pricing in your API responses"
+          why: "Agents comparing products across vendors need machine-readable pricing to include you in shortlists — a visual pricing table is invisible to them"
+          effort: "low"
+          impact: "high"
+          example_before: |
+            <!-- Visual pricing page with no structured data -->
+            <div class="pricing-card">
+              <h3>Pro Plan</h3>
+              <p>$49/month</p>
+            </div>
+          example_after: |
+            <script type="application/ld+json">
+            {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              "name": "Pro Plan",
+              "offers": {
+                "@type": "Offer",
+                "price": "49.00",
+                "priceCurrency": "USD"
+              }
+            }
+            </script>
+          verification: "Check your pricing page source for JSON-LD containing @type Offer or PriceSpecification"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "trans-self-serve-signup"
+        name: "Self-serve provisioning"
+        check_type: "self_serve_signup"
+        weight: "high"
+        description: "Whether an agent can create an account and get API credentials without human approval"
+        how_we_check: "We look for evidence of self-serve account creation: signup endpoints, registration forms, developer portal links, OAuth discovery endpoints, and API key provisioning. We also detect sales-gated access patterns (contact sales, request access, book a demo)."
+        recommendation: "Enable self-serve signup with programmatic API key provisioning. If creating an account requires emailing sales or getting manual approval, agents cannot onboard themselves."
+        fix:
+          what: "Add a self-serve signup flow with programmatic API key generation"
+          why: "An agent evaluating your API against competitors will skip you if it can't create an account without human intervention"
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            <a href="mailto:sales@company.com">Contact us for API access</a>
+          example_after: |
+            <a href="/developers/signup">Get your API key</a>
+          verification: "Check that a developer can go from your homepage to a working API key without emailing anyone"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "trans-checkout-flow"
+        name: "Agent-compatible checkout"
+        check_type: "checkout_flow"
+        weight: "medium"
+        description: "Whether programmatic purchasing is possible (Stripe ACP, x402, API checkout)"
+        how_we_check: "We check for Stripe Agentic Commerce Protocol (ACP) via /.well-known/acp.json, x402 payment headers, and payment/checkout endpoints in the OpenAPI spec. Most products will not have this today — this measures readiness for emerging agent commerce protocols."
+        recommendation: "Enable programmatic purchasing through Stripe ACP, x402 payment protocol, or API-based checkout endpoints. As agent commerce grows, early adopters will capture agent-mediated purchases."
+        fix:
+          what: "Implement agent-compatible checkout (Stripe ACP, x402, or API-based purchase endpoints)"
+          why: "Autonomous purchasing agents need programmatic transaction flows — they cannot fill out web forms"
+          effort: "high"
+          impact: "medium"
+          example_before: |
+            <a href="/checkout">Buy now</a>
+          example_after: |
+            # /.well-known/acp.json (Stripe ACP)
+            # Or: POST /v1/subscriptions { "plan": "pro" }
+          verification: "Check for /.well-known/acp.json or documented checkout API endpoints"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "trans-usage-billing"
+        name: "Usage and billing transparency"
+        check_type: "usage_billing_signals"
+        weight: "low"
+        description: "Whether API responses include usage/cost metadata for budget-aware agents"
+        how_we_check: "We check HTTP response headers for rate limit signals (X-RateLimit-*, RateLimit-*) and usage/cost metadata (X-Usage-*, X-Cost-*, X-Credits-*). We also check the OpenAPI spec for billing/usage endpoints."
+        recommendation: "Include usage and cost metadata in your API responses. Agents managing spending budgets need to know what each call costs and how much capacity remains."
+        fix:
+          what: "Add rate limit headers and usage metadata to API responses"
+          why: "Budget-aware agents need to track costs per call and remaining capacity"
+          effort: "low"
+          impact: "low"
+          example_before: |
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+          example_after: |
+            HTTP/1.1 200 OK
+            X-RateLimit-Limit: 1000
+            X-RateLimit-Remaining: 847
+            X-RateLimit-Reset: 1711234567
+          verification: "curl -v your API endpoint and check for X-RateLimit-* headers"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+      - id: "trans-free-tier"
+        name: "Free tier or trial available"
+        check_type: "free_tier_detection"
+        weight: "low"
+        description: "Whether a free tier, trial, or sandbox is available for agent evaluation"
+        how_we_check: "We check for Schema.org Offer with price 0, free/trial mentions in pricing pages, sandbox server URLs in OpenAPI specs, and freemium indicators in API responses."
+        recommendation: "Offer a free tier, free trial, or sandbox environment that agents can use to evaluate your product before committing to payment."
+        fix:
+          what: "Create a free tier, trial period, or sandbox environment"
+          why: "Agents evaluating multiple options will test the ones they can access for free first"
+          effort: "medium"
+          impact: "medium"
+          example_before: |
+            Plans start at $49/month
+          example_after: |
+            <script type="application/ld+json">
+            { "@type": "Offer", "name": "Free Tier", "price": "0", "priceCurrency": "USD" }
+            </script>
+          verification: "Check that your pricing includes a free option represented in structured data"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
+    thresholds:
+      green: "Machine-readable pricing AND self-serve signup AND (checkout flow OR free tier)"
+      yellow: "Some transactability signals but gaps in pricing, signup, or checkout"
+      red: "No machine-readable pricing AND no self-serve signup"

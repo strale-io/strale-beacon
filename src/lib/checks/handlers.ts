@@ -13,6 +13,13 @@ import { beaconFetch, type FetchResult } from "./fetch";
 import { extractLinksFromJson, linksByCategory, type FoundLink } from "./json-links";
 import { checkSchemaDrift } from "./schema-drift";
 import { checkMcpFunctional } from "./mcp-verify";
+import {
+  checkPricingStructuredData,
+  checkSelfServeSignup,
+  checkCheckoutFlow,
+  checkUsageBillingSignals,
+  checkFreeTierDetection,
+} from "./transactability";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1337,6 +1344,11 @@ const CHECK_HANDLERS: Record<string, (ctx: ScanContext, check: CheckDefinition) 
   "ax-mcp-functional": checkMcpFunctional,
   "comp-content-negotiation": checkContentNegotiation,
   "stab-content-freshness": checkContentFreshness,
+  "trans-pricing-structured": checkPricingStructuredData,
+  "trans-self-serve-signup": checkSelfServeSignup,
+  "trans-checkout-flow": checkCheckoutFlow,
+  "trans-usage-billing": checkUsageBillingSignals,
+  "trans-free-tier": checkFreeTierDetection,
 };
 
 /** Run a single check by its definition. */

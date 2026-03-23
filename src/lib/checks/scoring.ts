@@ -147,6 +147,26 @@ function scoreAgentExperience(results: CheckResult[]): Tier {
   return "yellow";
 }
 
+/**
+ * Transactability:
+ * Green if machine-readable pricing AND self-serve signup AND (checkout OR free tier)
+ * Red if no pricing AND no self-serve signup
+ * Yellow otherwise
+ */
+function scoreTransactability(results: CheckResult[]): Tier {
+  const pricing = checkPassed(results, "trans-pricing-structured");
+  const selfServe = checkPassed(results, "trans-self-serve-signup");
+  const checkout = checkPassed(results, "trans-checkout-flow");
+  const freeTier = checkPassed(results, "trans-free-tier");
+
+  if (pricing && selfServe && (checkout || freeTier)) return "green";
+
+  const { pass: passCount, fail: failCount } = counts(results);
+  if (passCount === 0 && failCount >= 3) return "red";
+
+  return "yellow";
+}
+
 /** Dispatch to the correct category scorer */
 const CATEGORY_SCORERS: Record<string, (results: CheckResult[]) => Tier> = {
   discoverability: scoreDiscoverability,
@@ -154,6 +174,7 @@ const CATEGORY_SCORERS: Record<string, (results: CheckResult[]) => Tier> = {
   usability: scoreUsability,
   stability: scoreStability,
   "agent-experience": scoreAgentExperience,
+  transactability: scoreTransactability,
 };
 
 /** Score a category's tier based on its check results. */

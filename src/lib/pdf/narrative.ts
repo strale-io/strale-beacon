@@ -17,25 +17,26 @@ export function generateNarrative(result: ScanResult): string {
 
   const greenCount = result.categories.filter((c) => c.tier === "green").length;
   const redCount = result.categories.filter((c) => c.tier === "red").length;
+  const total = result.categories.length;
 
   const parts: string[] = [];
 
   // Opening — overall posture
-  if (greenCount >= 4) {
+  if (greenCount >= total - 1) {
     parts.push(
-      `${result.domain} is well-prepared for AI agent interaction, with ${greenCount} of 5 areas rated agent-ready.`
+      `${result.domain} is well-prepared for AI agent interaction, with ${greenCount} of ${total} areas rated agent-ready.`
     );
-  } else if (greenCount >= 2) {
+  } else if (greenCount >= Math.ceil(total / 2)) {
     parts.push(
-      `${result.domain} has a mixed agent-readiness posture, with ${greenCount} of 5 areas rated agent-ready and notable gaps in ${redCount > 0 ? redCount + " area" + (redCount > 1 ? "s" : "") : "several areas"}.`
+      `${result.domain} has a mixed agent-readiness posture, with ${greenCount} of ${total} areas rated agent-ready and notable gaps in ${redCount > 0 ? redCount + " area" + (redCount > 1 ? "s" : "") : "several areas"}.`
     );
-  } else if (greenCount === 1) {
+  } else if (greenCount >= 1) {
     parts.push(
-      `${result.domain} has limited agent-readiness, with only 1 of 5 areas rated agent-ready.`
+      `${result.domain} has limited agent-readiness, with only ${greenCount} of ${total} areas rated agent-ready.`
     );
   } else {
     parts.push(
-      `${result.domain} is not currently prepared for AI agent interaction. None of the 5 assessed areas meet the agent-ready threshold.`
+      `${result.domain} is not currently prepared for AI agent interaction. None of the ${total} assessed areas meet the agent-ready threshold.`
     );
   }
 
@@ -75,6 +76,9 @@ function buildStrengths(categories: CategoryResult[]): string {
         break;
       case "agent-experience":
         descriptions.push("a positive first-contact experience for arriving agents");
+        break;
+      case "transactability":
+        descriptions.push("agent-ready transactability with machine-readable pricing and self-serve provisioning");
         break;
     }
   }
@@ -116,6 +120,9 @@ function buildWeaknesses(categories: CategoryResult[]): string {
             ? `providing a poor first-contact experience (${topFail.name.toLowerCase()})`
             : "providing a poor first-contact experience for arriving agents"
         );
+        break;
+      case "transactability":
+        descriptions.push("not set up for agent-initiated transactions (no machine-readable pricing or self-serve signup)");
         break;
     }
   }

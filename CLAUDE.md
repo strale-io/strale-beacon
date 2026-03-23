@@ -54,12 +54,13 @@ strale-beacon/
 └── strale-beacon-spec.docx     # Full product specification
 ```
 
-## Five scan categories
+## Six scan categories
 1. **Discoverability** — Can agents find you?
 2. **Comprehension** — Can agents understand what you do?
 3. **Usability** — Can agents interact with you?
 4. **Stability** — Can agents depend on you?
 5. **Agent Experience** — What happens when an agent shows up?
+6. **Transactability** — Can agents do business with you?
 
 Each category: Green (Ready), Yellow (Partial), Red (Not Ready). No aggregate score.
 
@@ -84,10 +85,10 @@ Each category: Green (Ready), Yellow (Partial), Red (Not Ready). No aggregate sc
 Checks are defined as configuration in check-registry.yaml, not hardcoded. The scanning engine reads the registry and executes generically by check type (file_exists, header_parse, html_analyze, api_probe, etc.). Adding new checks = adding config entries, not writing new engine code. Check suite is versioned.
 
 ## Scoring methodology
-- No aggregate score. Five independent category assessments.
+- No aggregate score. Six independent category assessments.
 - Each category: Green (Ready), Yellow (Partial), Red (Not Ready).
-- Primary visual: five-axis radar chart with colored fills per tier.
-- Shareable summary: radar chart shape + count ("3 of 5 areas agent-ready").
+- Primary visual: score ring showing ready category count.
+- Shareable summary: score ring + count ("3 of 6 areas agent-ready").
 
 ## Results page layers
 1. **Overview** (above fold): Product name, radar chart hero, five tier badges with one-sentence summaries

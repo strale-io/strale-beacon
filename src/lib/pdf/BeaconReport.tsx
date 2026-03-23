@@ -409,6 +409,7 @@ export default function BeaconReport({ result, previousTiers, previousScannedAt 
             { name: "Usability", desc: "Can agents interact with you? Checks for auth documentation, signup friction, sandbox availability, error responses, and SDK presence." },
             { name: "Stability", desc: "Can agents depend on you? Checks for API versioning, changelogs, rate limits, ToS compatibility, and security headers." },
             { name: "Agent Experience", desc: "What happens when an agent shows up? Checks first-contact quality, documentation navigability, response consistency, and support paths." },
+            { name: "Transactability", desc: "Can agents do business with you? Checks for machine-readable pricing, self-serve signup, agent-compatible checkout, usage/billing transparency, and free tier availability." },
           ].map((cat) => (
             <View key={cat.name} style={s.aboutItem}>
               <Text style={s.aboutLabel}>{cat.name}</Text>
