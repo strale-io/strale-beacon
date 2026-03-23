@@ -56,12 +56,12 @@ export async function GET(
           padding: "48px 64px",
         }}
       >
-        {/* Header */}
+        {/* Header — matches canonical Strale logo: "strale" in lowercase, Inter 600, tight tracking */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-          <span style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
-            Strale
+          <span style={{ fontSize: 24, fontWeight: 600, color: "#111827", letterSpacing: "-0.025em" }}>
+            strale
           </span>
-          <span style={{ fontSize: 24, fontWeight: 500, color: "hsl(225, 50%, 45%)" }}>
+          <span style={{ fontSize: 24, fontWeight: 500, color: "hsl(225, 50%, 45%)", letterSpacing: "-0.025em" }}>
             Beacon
           </span>
         </div>

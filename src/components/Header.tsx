@@ -1,12 +1,12 @@
 import Link from "next/link";
+import StraleLogo from "./StraleLogo";
 
 export default function Header() {
   return (
     <header className="w-full border-b border-border">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-baseline gap-1.5">
-          <span className="text-lg font-bold text-foreground tracking-tight">Strale</span>
-          <span className="text-lg font-medium text-brand tracking-tight">Beacon</span>
+          <StraleLogo showBeacon size="md" />
         </Link>
 
         <a
