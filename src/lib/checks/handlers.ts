@@ -12,6 +12,7 @@ import type { CheckDefinition, CheckResult, ScanContext, Probe, Confidence } fro
 import { beaconFetch, type FetchResult } from "./fetch";
 import { extractLinksFromJson, linksByCategory, type FoundLink } from "./json-links";
 import { checkSchemaDrift } from "./schema-drift";
+import { checkMcpFunctional } from "./mcp-verify";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -271,8 +272,37 @@ export async function checkMcpA2a(ctx: ScanContext, check: CheckDefinition): Pro
     probes.push(toProbe(result));
     if (result.ok) {
       found.push(p);
-      try { details[p] = JSON.parse(result.body); }
-      catch { details[p] = "present but not valid JSON"; }
+      try {
+        const parsed = JSON.parse(result.body);
+        details[p] = parsed;
+
+        // Store MCP manifest in context
+        if (p.includes("mcp.json")) {
+          ctx.mcpManifest = parsed;
+          // The MCP endpoint is typically at /mcp or specified in the manifest
+          if (parsed.endpoint) {
+            ctx.mcpEndpointUrl = parsed.endpoint.startsWith("http")
+              ? parsed.endpoint
+              : ctx.baseUrl + parsed.endpoint;
+          } else {
+            // Default: assume /mcp at the same origin
+            ctx.mcpEndpointUrl = ctx.baseUrl + "/mcp";
+          }
+        }
+
+        // Store A2A Agent Card in context
+        if (p.includes("agent.json") || p.includes("agent-card")) {
+          ctx.a2aCard = parsed;
+          ctx.a2aCardUrl = url;
+          if (parsed.url && typeof parsed.url === "string") {
+            ctx.a2aTaskUrl = parsed.url.startsWith("http")
+              ? parsed.url
+              : ctx.baseUrl + parsed.url;
+          }
+        }
+      } catch {
+        details[p] = "present but not valid JSON";
+      }
     }
   }
 
@@ -1187,6 +1217,7 @@ const CHECK_HANDLERS: Record<string, (ctx: ScanContext, check: CheckDefinition) 
   "ax-doc-navigability": checkDocNavigability,
   "ax-response-consistency": checkResponseConsistency,
   "ax-support-paths": checkSupportPaths,
+  "ax-mcp-functional": checkMcpFunctional,
 };
 
 /** Run a single check by its definition. */

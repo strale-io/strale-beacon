@@ -864,7 +864,39 @@ categories:
         added: "2026-03"
         last_reviewed: "2026-03"
 
+      - id: "ax-mcp-functional"
+        name: "MCP / A2A Functional Verification"
+        check_type: "mcp_functional"
+        weight: "high"
+        description: "If MCP or A2A endpoints were discovered, verify they actually work by initiating a protocol session."
+        how_we_check: "If an MCP endpoint was discovered, we POST an initialize request (JSON-RPC 2.0, method 'initialize') with Streamable HTTP transport. If initialization succeeds, we send an 'initialized' notification then a 'tools/list' request to verify the server can enumerate its tools. We report the server name, protocol version, and tool count. If an A2A Agent Card was found with a task URL, we POST a minimal JSON-RPC message to verify the endpoint responds. We handle both plain JSON and SSE (text/event-stream) responses."
+        recommendation: "Verify your MCP server responds correctly to initialize and tools/list requests. An MCP server that's discoverable but doesn't respond to protocol requests wastes agent time on a dead end."
+        fix:
+          what: "Ensure your MCP server handles initialize and tools/list requests per the MCP specification"
+          why: "Agents that discover your MCP endpoint will attempt to connect. If initialization fails, the agent abandons your tool and moves to a competitor."
+          effort: "medium"
+          impact: "high"
+          example_before: |
+            # MCP endpoint exists but doesn't respond to protocol:
+            POST /mcp → 404 or 500
+            # Or responds but with invalid JSON-RPC:
+            POST /mcp → { "error": "not implemented" }
+          example_after: |
+            # MCP endpoint handles initialization:
+            POST /mcp
+            Request: { "jsonrpc": "2.0", "method": "initialize", "id": 1, "params": { "protocolVersion": "2025-03-26", "capabilities": {}, "clientInfo": { "name": "test", "version": "1.0" } } }
+            Response: { "jsonrpc": "2.0", "id": 1, "result": { "protocolVersion": "2025-03-26", "capabilities": { "tools": {} }, "serverInfo": { "name": "YourServer", "version": "1.0" } } }
+
+            # MCP endpoint lists tools:
+            POST /mcp
+            Request: { "jsonrpc": "2.0", "method": "tools/list", "id": 2 }
+            Response: { "jsonrpc": "2.0", "id": 2, "result": { "tools": [{ "name": "search", "description": "Search the catalog" }] } }
+          verification: "curl -X POST https://yourdomain.com/mcp -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"method\":\"initialize\",\"id\":1,\"params\":{\"protocolVersion\":\"2025-03-26\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}' — should return JSON-RPC with serverInfo"
+        mvp: true
+        added: "2026-03"
+        last_reviewed: "2026-03"
+
     thresholds:
-      green: "API returns helpful JSON on first contact AND docs reachable in ≤2 hops AND consistent response format"
+      green: "API returns helpful JSON on first contact AND docs reachable in ≤2 hops AND consistent response format AND (MCP/A2A functional if discovered)"
       yellow: "Some agent-friendly responses but inconsistent or hard to navigate"
       red: "Agent encounters HTML errors, login walls, or cannot find documentation"

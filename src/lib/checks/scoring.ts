@@ -134,8 +134,10 @@ function scoreAgentExperience(results: CheckResult[]): Tier {
   const docNav = checkPassed(results, "ax-doc-navigability");
   const responseConsistency = checkPassed(results, "ax-response-consistency");
   const supportPaths = checkNotFailed(results, "ax-support-paths");
+  const mcpFunctional = checkPassed(results, "ax-mcp-functional");
 
-  if (firstContact && docNav && (responseConsistency || supportPaths)) return "green";
+  // MCP functional pass is a strong positive signal
+  if (firstContact && docNav && (responseConsistency || supportPaths || mcpFunctional)) return "green";
 
   if (highWeightFailures(results) >= 1 && counts(results).fail >= 2) return "red";
 

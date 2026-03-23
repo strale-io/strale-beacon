@@ -122,6 +122,18 @@ export interface ScanContext {
   openapiVersion?: string;
   openapiUrl?: string;
 
+  /** MCP server endpoint URL if discovered (from /.well-known/mcp.json or root JSON) */
+  mcpEndpointUrl?: string;
+  /** Parsed MCP manifest if found */
+  mcpManifest?: Record<string, unknown>;
+
+  /** A2A Agent Card URL if discovered (from /.well-known/agent.json) */
+  a2aCardUrl?: string;
+  /** Parsed A2A Agent Card */
+  a2aCard?: Record<string, unknown>;
+  /** A2A task endpoint URL from the Agent Card */
+  a2aTaskUrl?: string;
+
   /** Documentation URLs that were found accessible */
   docUrls: string[];
 
