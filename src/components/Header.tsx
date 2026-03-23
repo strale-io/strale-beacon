@@ -3,7 +3,7 @@ import StraleLogo from "./StraleLogo";
 
 export default function Header() {
   return (
-    <header className="w-full border-b border-border">
+    <header className="w-full">
       <div className="max-w-[1152px] mx-auto px-8 h-20 flex items-center justify-between">
         <Link href="/">
           <StraleLogo showBeacon />
