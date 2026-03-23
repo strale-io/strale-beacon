@@ -117,20 +117,20 @@ export async function upsertDomain(domain: string): Promise<DbDomain | null> {
 }
 
 /**
- * Find a cached scan for a domain within the last hour.
+ * Find a cached scan for a domain within the last 15 minutes.
  */
 export async function findRecentScan(
   domain: string
 ): Promise<DbScan | null> {
   if (!isSupabaseConfigured()) return null;
 
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const cacheWindow = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
   const { data } = await supabase
     .from("scans")
     .select("*, domains!inner(domain)")
     .eq("domains.domain", domain)
-    .gte("scanned_at", oneHourAgo)
+    .gte("scanned_at", cacheWindow)
     .order("scanned_at", { ascending: false })
     .limit(1)
     .single();

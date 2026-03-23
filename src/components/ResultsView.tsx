@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { ScanResult, Tier } from "@/lib/checks/types";
 import Header from "@/components/Header";
@@ -11,6 +11,7 @@ import CheckDetail from "@/components/CheckDetail";
 import ActionPlan from "@/components/ActionPlan";
 import ShareBar from "@/components/ShareBar";
 import SubscribeForm from "@/components/SubscribeForm";
+import DownloadReport from "@/components/DownloadReport";
 
 function getCategorySummary(category: { tier: Tier; checks: { status: string; finding: string }[] }): string {
   const passCount = category.checks.filter((c) => c.status === "pass").length;
@@ -30,10 +31,35 @@ function getCategorySummary(category: { tier: Tier; checks: { status: string; fi
 export default function ResultsView() {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [rescanning, setRescanning] = useState(false);
+
+  const handleRescan = async () => {
+    if (!result || rescanning) return;
+    setRescanning(true);
+    try {
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: result.url, force: true }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.slug) {
+          router.push(`/results/${data.slug}`);
+          router.refresh();
+        }
+      }
+    } catch {
+      // Silently fail — user can try again
+    } finally {
+      setRescanning(false);
+    }
+  };
 
   useEffect(() => {
     async function loadResults() {
@@ -117,8 +143,30 @@ export default function ResultsView() {
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {result.domain}
           </h1>
-          <p className="mt-1 text-sm text-text-muted">
-            Scanned {scannedDate} · {result.scan_duration_ms}ms · v{result.scan_version}
+          <p className="mt-1 text-sm text-text-muted flex items-center justify-center gap-2 flex-wrap">
+            <span>Scanned {scannedDate} · {result.scan_duration_ms}ms · v{result.scan_version}</span>
+            <button
+              onClick={handleRescan}
+              disabled={rescanning}
+              className="inline-flex items-center gap-1 text-xs text-brand hover:text-brand-hover transition-colors disabled:opacity-50"
+            >
+              {rescanning ? (
+                <>
+                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Rescanning…
+                </>
+              ) : (
+                <>
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                  </svg>
+                  Rescan
+                </>
+              )}
+            </button>
           </p>
         </div>
 
@@ -183,13 +231,17 @@ export default function ResultsView() {
           <SubscribeForm domain={result.domain} />
         </div>
 
-        <div className="mb-12">
+        {/* Share and download */}
+        <div className="mb-12 space-y-4">
           <ShareBar
             url={result.url}
             productName={result.domain}
             greenCount={greenCount}
             totalCategories={totalCategories}
           />
+          <div className="flex justify-center">
+            <DownloadReport slug={slug} domain={result.domain} />
+          </div>
         </div>
       </main>
 
