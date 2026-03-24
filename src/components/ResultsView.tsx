@@ -183,16 +183,16 @@ export default function ResultsView() {
             {/* Row 2: Scanned */}
             <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
               <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Scanned</span>
-              <span className="font-medium text-foreground flex-1">
+              <span className="font-medium text-foreground">
                 {scannedDate}
+                <button
+                  onClick={handleRescan}
+                  disabled={rescanning}
+                  className="ml-2 text-[11px] text-text-secondary font-normal hover:underline disabled:opacity-50"
+                >
+                  {rescanning ? "Rescanning…" : "Rescan"}
+                </button>
               </span>
-              <button
-                onClick={handleRescan}
-                disabled={rescanning}
-                className="ml-auto pr-4 text-[11px] text-[#185FA5] font-medium hover:underline disabled:opacity-50"
-              >
-                {rescanning ? "Rescanning…" : "Rescan"}
-              </button>
             </div>
             {/* Row 3: Status */}
             <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
@@ -213,24 +213,23 @@ export default function ResultsView() {
         </p>
 
         {/* Part 4: Share/export toolbar */}
-        <div className="flex items-center justify-between border-t border-[#E5E7EB] pt-4 mb-10 text-[13px]">
-          <div className="flex items-center gap-[18px] text-text-secondary">
-            <button onClick={handleCopyLink} className="hover:text-foreground transition-colors cursor-pointer">
-              {copied ? "✓ Copied" : "Copy link"}
+        <div className="flex items-center justify-between border-t border-[#E5E7EB] py-5 text-[13px]">
+          <div className="flex items-center gap-5 text-text-secondary">
+            <button onClick={handleCopyLink} className="hover:underline cursor-pointer">
+              {copied ? "✓ Copied" : "Copy URL"}
             </button>
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
               Share on X
             </a>
-            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-              LinkedIn
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+              Share on LinkedIn
             </a>
-            <span className="w-px h-[14px] bg-[#D1D5DB] mx-[2px]" />
             <DownloadReport slug={slug} domain={result.domain} />
             <a
               href={`/api/report/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
+              className="hover:underline"
             >
               Export JSON
             </a>
@@ -239,9 +238,9 @@ export default function ResultsView() {
             href="https://strale.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#185FA5] font-medium hover:underline transition-colors whitespace-nowrap"
+            className="text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap"
           >
-            List on Strale →
+            Visit Strale →
           </a>
         </div>
 
@@ -254,8 +253,8 @@ export default function ResultsView() {
           />
         )}
 
-        {/* Divider + section heading — Fix 2: strale.dev section heading style */}
-        <div className="border-t border-border pt-10 mb-6">
+        {/* Section heading */}
+        <div className="pt-4 mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             How ready are you?
           </h2>
