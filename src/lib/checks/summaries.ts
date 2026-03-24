@@ -1,5 +1,12 @@
 import type { CategoryResult, CheckResult, Tier } from "./types";
 
+/** Capitalize first letter of each sentence in a string */
+function capitalizeSentences(text: string): string {
+  return text
+    .replace(/^([a-z])/, (_, c) => c.toUpperCase())
+    .replace(/\. ([a-z])/g, (_, c) => ". " + c.toUpperCase());
+}
+
 /**
  * Generate a consequence-focused, one-sentence summary for each category.
  *
@@ -83,7 +90,7 @@ function comprehensionSummary(cat: CategoryResult): string {
     if (docs?.status === "pass") parts.push("docs publicly accessible");
     const contentNeg = findCheck(cat.checks, "content-negotiation");
     if (contentNeg?.status === "pass") parts.push("content negotiation supported");
-    return `${parts.join(". ")}.`;
+    return capitalizeSentences(`${parts.join(". ")}.`);
   }
 
   if (cat.tier === "red") {
@@ -115,7 +122,7 @@ function usabilitySummary(cat: CategoryResult): string {
     if (auth?.status === "pass") parts.push("authentication documented");
     if (signup?.status === "pass") parts.push("low signup friction");
     if (sandbox?.status === "pass") parts.push("sandbox/free tier available");
-    return `${parts.join(". ")}.`;
+    return capitalizeSentences(`${parts.join(". ")}.`);
   }
 
   if (cat.tier === "red") {
@@ -148,7 +155,7 @@ function stabilitySummary(cat: CategoryResult): string {
     if (security?.status === "pass") parts.push("security headers present");
     const freshness = findCheck(cat.checks, "content-freshness");
     if (freshness?.status === "pass") parts.push("freshness signals present");
-    return `${parts.join(". ")}.`;
+    return capitalizeSentences(`${parts.join(". ")}.`);
   }
 
   if (cat.tier === "red") {
@@ -180,7 +187,7 @@ function agentExperienceSummary(cat: CategoryResult): string {
     if (firstContact?.status === "pass") parts.push("structured first-contact response");
     if (docNav?.status === "pass") parts.push("docs reachable");
     if (support?.status === "pass") parts.push("support path available");
-    return `${parts.join(". ")}.`;
+    return capitalizeSentences(`${parts.join(". ")}.`);
   }
 
   if (cat.tier === "red") {
@@ -209,7 +216,7 @@ function transactabilitySummary(cat: CategoryResult): string {
     if (signup?.status === "pass") parts.push("self-serve signup");
     if (checkout?.status === "pass") parts.push("programmatic checkout");
     if (freeTier?.status === "pass") parts.push("free tier available");
-    return `${parts.join(". ")}.`;
+    return capitalizeSentences(`${parts.join(". ")}.`);
   }
 
   if (cat.tier === "red") {

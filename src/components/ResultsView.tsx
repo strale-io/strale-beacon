@@ -279,7 +279,7 @@ export default function ResultsView() {
             return (
             <div key={cat.category_id}>
               {i > 0 && <div className="border-t border-[#E5E7EB]" />}
-              <div className={`px-5 py-4 relative transition-[outline-color] duration-150 outline outline-1 -outline-offset-1 outline-transparent hover:outline-[#C0C0C0] hover:z-10 ${radius}`}>
+              <div className={`px-5 py-4 relative transition-[outline-color] duration-75 outline outline-1 -outline-offset-1 outline-transparent hover:outline-[#D1D5DB] hover:z-10 ${radius}`}>
                 <CategoryBadge
                   label={cat.label}
                   tier={cat.tier}
@@ -296,7 +296,7 @@ export default function ResultsView() {
               </div>
 
               {expandedCategory === cat.category_id && (
-                <div className="border-t border-[#F3F4F6] px-5 py-4">
+                <div className="border-t border-[#F3F4F6] px-5 py-4 bg-white">
                   <div className="ml-[18px] space-y-0">
                     {cat.checks.map((check) => (
                       <CheckDetail key={check.check_id} check={check} />
