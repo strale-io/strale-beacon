@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runScan } from "@/lib/checks/runner";
+import { detectApiDomain } from "@/lib/detect-api-domain";
 import {
   normalizeDomain,
   domainToSlug,
@@ -73,7 +74,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Run the scan
-    const result = await runScan(normalizedUrl);
+    const { result, context } = await runScan(normalizedUrl);
+
+    // Detect related API domain (essentially free — uses already-fetched data)
+    const apiDomainSuggestion = detectApiDomain(
+      result.domain,
+      context.homepageHtml,
+      context.crossDomainLinks,
+    );
 
     // Persist to Supabase
     let finalSlug = slug;
@@ -89,7 +97,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ...result, slug: finalSlug });
+    return NextResponse.json({
+      ...result,
+      slug: finalSlug,
+      ...(apiDomainSuggestion ? { apiDomainSuggestion } : {}),
+    });
   } catch (err) {
     console.error("Scan error:", err);
     return NextResponse.json(

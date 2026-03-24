@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { ScanResult, CheckResult } from "@/lib/checks/types";
+import { normalizeUrl } from "@/lib/normalize-url";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScanFeed from "@/components/ScanFeed";
@@ -10,28 +11,31 @@ import ScanFeed from "@/components/ScanFeed";
 type ScanState = "idle" | "scanning" | "error";
 
 export default function Home() {
+  return (
+    <Suspense>
+      <HomeInner />
+    </Suspense>
+  );
+}
+
+function HomeInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [error, setError] = useState("");
   const [scanResults, setScanResults] = useState<CheckResult[]>([]);
   const [totalChecks, setTotalChecks] = useState(20);
   const inputRef = useRef<HTMLInputElement>(null);
+  const autoScanTriggered = useRef(false);
 
-  const handleScan = async () => {
-    const trimmed = url.trim();
-    if (!trimmed) {
-      setError("Please enter a URL");
-      return;
-    }
-
-    let normalizedUrl: string;
+  const handleScan = async (overrideUrl?: string) => {
+    const inputValue = overrideUrl || url;
+    let normalized;
     try {
-      const withProtocol = trimmed.match(/^https?:\/\//) ? trimmed : `https://${trimmed}`;
-      new URL(withProtocol);
-      normalizedUrl = withProtocol;
-    } catch {
-      setError("Please enter a valid URL (e.g., stripe.com)");
+      normalized = normalizeUrl(inputValue);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Please enter a valid URL");
       return;
     }
 
@@ -39,39 +43,67 @@ export default function Home() {
     setScanState("scanning");
     setScanResults([]);
 
-    try {
-      const response = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: normalizedUrl }),
-      });
+    // Try primary URL, then fallbacks for bare-word inputs
+    const urlsToTry = [normalized.url, ...normalized.fallbacks];
+    let lastError = "";
 
-      if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body.error || `Scan failed (${response.status})`);
-      }
+    for (const candidateUrl of urlsToTry) {
+      try {
+        const response = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: candidateUrl }),
+        });
 
-      const result = await response.json();
-      const slug = result.slug as string;
-
-      const allChecks: CheckResult[] = [];
-      for (const cat of (result as ScanResult).categories) {
-        for (const check of cat.checks) {
-          allChecks.push(check);
+        if (!response.ok) {
+          const body = await response.json().catch(() => ({}));
+          lastError = body.error || `Scan failed (${response.status})`;
+          continue;
         }
-      }
-      setTotalChecks(allChecks.length);
-      setScanResults(allChecks);
 
-      const animationTime = Math.min(allChecks.length * 150, 3000);
-      setTimeout(() => {
-        router.push(`/results/${slug}`);
-      }, animationTime + 500);
-    } catch (err) {
-      setScanState("error");
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+        const result = await response.json();
+        const slug = result.slug as string;
+
+        const allChecks: CheckResult[] = [];
+        for (const cat of (result as ScanResult).categories) {
+          for (const check of cat.checks) {
+            allChecks.push(check);
+          }
+        }
+        setTotalChecks(allChecks.length);
+        setScanResults(allChecks);
+
+        const animationTime = Math.min(allChecks.length * 150, 3000);
+        const apiSuggestion = result.apiDomainSuggestion as string | undefined;
+        const query = apiSuggestion ? `?suggest=${encodeURIComponent(apiSuggestion)}` : "";
+        setTimeout(() => {
+          router.push(`/results/${slug}${query}`);
+        }, animationTime + 500);
+        return; // success — stop trying
+      } catch {
+        lastError = `Couldn't reach ${new URL(candidateUrl).hostname}. Check the domain and try again.`;
+        continue;
+      }
     }
+
+    // All candidates failed
+    setScanState("error");
+    const displayDomain = urlsToTry.length === 1
+      ? new URL(urlsToTry[0]).hostname
+      : inputValue.trim();
+    setError(`Couldn't reach ${displayDomain}. Check the domain and try again.`);
   };
+
+  // Auto-scan if ?url= is present (from API domain suggestion link)
+  useEffect(() => {
+    const urlParam = searchParams.get("url");
+    if (urlParam && !autoScanTriggered.current) {
+      autoScanTriggered.current = true;
+      setUrl(urlParam);
+      handleScan(urlParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleScan();
@@ -119,7 +151,7 @@ export default function Home() {
               className="flex-1 h-12 px-5 text-base rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
-              onClick={handleScan}
+              onClick={() => handleScan()}
               disabled={scanState === "scanning"}
               className="h-12 px-8 bg-foreground text-background font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >

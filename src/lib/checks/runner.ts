@@ -163,7 +163,7 @@ async function runCheckWithTimeout(
 }
 
 /** Run all checks for a URL and return structured results. */
-export async function runScan(url: string): Promise<ScanResult> {
+export async function runScan(url: string): Promise<{ result: ScanResult; context: ScanContext }> {
   const startTime = Date.now();
   const registry = getCheckRegistry();
   const ctx = createScanContext(url);
@@ -283,11 +283,14 @@ export async function runScan(url: string): Promise<ScanResult> {
   const domain = new URL(url).hostname;
 
   return {
-    url,
-    domain,
-    scanned_at: new Date().toISOString(),
-    scan_duration_ms: Date.now() - startTime,
-    categories,
-    scan_version: registry.version,
+    result: {
+      url,
+      domain,
+      scanned_at: new Date().toISOString(),
+      scan_duration_ms: Date.now() - startTime,
+      categories,
+      scan_version: registry.version,
+    },
+    context: ctx,
   };
 }

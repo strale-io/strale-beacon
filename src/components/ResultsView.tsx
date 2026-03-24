@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { ScanResult } from "@/lib/checks/types";
 import { categorySummary } from "@/lib/checks/summaries";
@@ -19,6 +19,7 @@ export default function ResultsView() {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [result, setResult] = useState<ScanResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -27,6 +28,8 @@ export default function ResultsView() {
   const [previousTiers, setPreviousTiers] = useState<Record<string, string> | null>(null);
   const [previousScannedAt, setPreviousScannedAt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [apiSuggestionDismissed, setApiSuggestionDismissed] = useState(false);
+  const apiDomainSuggestion = searchParams.get("suggest") || null;
 
   const handleRescan = async () => {
     if (!result || rescanning) return;
@@ -211,6 +214,35 @@ export default function ResultsView() {
         <p className="text-[15px] text-[#4B5563] leading-[1.7] font-medium mb-5">
           {narrative}
         </p>
+
+        {/* API domain suggestion banner */}
+        {apiDomainSuggestion && !apiSuggestionDismissed && (
+          <div
+            className="mb-5 flex items-center justify-between gap-3 rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3"
+            style={{ animation: "fade-in-up 0.3s ease-out both" }}
+          >
+            <p className="text-sm text-[#1E40AF]">
+              ℹ️ We found <span className="font-medium">{apiDomainSuggestion}</span> linked from this site.{" "}
+              <a
+                href={`/?url=${encodeURIComponent(apiDomainSuggestion)}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push(`/?url=${encodeURIComponent(apiDomainSuggestion)}`);
+                }}
+                className="font-medium underline underline-offset-2 hover:text-[#1E3A8A]"
+              >
+                Scan that instead →
+              </a>
+            </p>
+            <button
+              onClick={() => setApiSuggestionDismissed(true)}
+              className="flex-shrink-0 text-[#1E40AF] hover:text-[#1E3A8A] text-lg leading-none"
+              aria-label="Dismiss suggestion"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Part 4: Share/export toolbar */}
         <div className="flex items-center justify-between mb-[50px] text-[13px]">

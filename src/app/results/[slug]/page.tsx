@@ -30,8 +30,8 @@ export async function generateMetadata({
     .map((c) => `${c.label}: ${TIER_LABELS[c.tier]}`)
     .join(". ");
 
-  const title = `${result.domain} — Agent-Readiness Report | Strale Beacon`;
-  const description = `${greenCount} of ${total} areas agent-ready. ${tierDescriptions}.`;
+  const title = `${result.domain} — Agent Readiness Report | Strale Beacon`;
+  const description = `${result.domain} scores ${greenCount}/${total} on agent readiness. See what AI agents can and can't do with this product.`;
   const ogImageUrl = `${BASE_URL}/api/og/${slug}`;
   const pageUrl = `${BASE_URL}/results/${slug}`;
 

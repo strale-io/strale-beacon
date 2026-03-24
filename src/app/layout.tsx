@@ -5,23 +5,23 @@ import "./globals.css";
 const BASE_URL = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: "Strale Beacon — How Visible Is Your Product to AI Agents?",
+  title: "Strale Beacon — Is your product ready for AI agents?",
   description:
-    "Free agent-readiness scanner. Beacon checks your site across 5 categories and shows you exactly what AI agents see — and what they're missing.",
+    "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
   metadataBase: new URL(BASE_URL),
   openGraph: {
-    title: "Strale Beacon — How Visible Is Your Product to AI Agents?",
+    title: "Strale Beacon — Is your product ready for AI agents?",
     description:
-      "Free agent-readiness scanner. Beacon checks your site across 5 categories and shows you exactly what AI agents see — and what they're missing.",
+      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
     type: "website",
     url: BASE_URL,
     siteName: "Strale Beacon",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Strale Beacon — How Visible Is Your Product to AI Agents?",
+    title: "Strale Beacon — Is your product ready for AI agents?",
     description:
-      "Free agent-readiness scanner. Beacon checks your site across 5 categories and shows you exactly what AI agents see — and what they're missing.",
+      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
     site: "@strale_io",
   },
   icons: {
