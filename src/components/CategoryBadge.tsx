@@ -47,7 +47,7 @@ export default function CategoryBadge({
         <span className="text-[15px] font-medium text-foreground">{label}</span>
 
         {/* Check count */}
-        <span className="text-[13px] text-[#9CA3AF] transition-colors duration-150 group-hover:text-[#6B7280]">
+        <span className="text-[13px] font-medium text-[#9CA3AF] transition-colors duration-150 group-hover:text-[#6B7280]">
           {passCount} / {totalChecks}
         </span>
 
@@ -56,7 +56,7 @@ export default function CategoryBadge({
 
         {/* Chevron */}
         <svg
-          className={`w-4 h-4 text-[#D1D5DB] shrink-0 transition-all duration-150 group-hover:text-[#9CA3AF] ${expanded ? "rotate-90" : ""}`}
+          className={`w-4 h-4 text-[#9CA3AF] shrink-0 transition-all duration-150 group-hover:text-[#374151] ${expanded ? "rotate-90" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2}
@@ -68,7 +68,7 @@ export default function CategoryBadge({
 
       {/* Summary line */}
       <div className="mt-1 ml-[18px]">
-        <p className={`text-[13px] leading-[1.5] transition-colors duration-150 ${summaryStyle.base} ${summaryStyle.hover}`}>
+        <p className={`text-[13px] font-medium leading-[1.5] transition-colors duration-150 ${summaryStyle.base} ${summaryStyle.hover}`}>
           {summary}
         </p>
       </div>

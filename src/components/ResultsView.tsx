@@ -272,7 +272,7 @@ export default function ResultsView() {
           {result.categories.map((cat, i) => (
             <div key={cat.category_id}>
               {i > 0 && <div className="border-t border-[#E5E7EB]" />}
-              <div className="px-5 py-4">
+              <div className="px-5 py-4 relative transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.12)] hover:z-10 rounded-sm">
                 <CategoryBadge
                   label={cat.label}
                   tier={cat.tier}
