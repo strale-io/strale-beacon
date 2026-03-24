@@ -40,15 +40,15 @@ export default function ResultsView() {
       if (response.ok) {
         const data = await response.json();
         if (data.slug) {
-          router.push(`/results/${data.slug}`);
-          router.refresh();
+          // Force a full page reload to pick up fresh data
+          window.location.href = `/results/${data.slug}`;
+          return;
         }
       }
     } catch {
       // Silently fail
-    } finally {
-      setRescanning(false);
     }
+    setRescanning(false);
   };
 
   const handleCopyLink = async () => {
@@ -132,7 +132,6 @@ export default function ResultsView() {
   const passedChecks = result.categories.reduce(
     (n, c) => n + c.checks.filter((ch) => ch.status === "pass").length, 0
   );
-  const notReadyCount = result.categories.filter((c) => c.tier !== "green").length;
   const scannedDate = new Date(result.scanned_at).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -155,28 +154,6 @@ export default function ResultsView() {
     greenCount >= totalCategories ? "#16A34A" :
     greenCount >= 2 ? "#CA8A04" :
     "#DC2626";
-
-  // Row 5: key signals or issues
-  const SIGNAL_IDS = [
-    "disc-llms-txt", "comp-openapi", "disc-mcp-a2a", "disc-structured-data",
-    "stab-security", "trans-pricing-structured", "ax-mcp-functional",
-  ];
-  const allChecks = result.categories.flatMap((c) => c.checks);
-  const keySignals = SIGNAL_IDS
-    .filter((id) => allChecks.some((ch) => ch.check_id === id && ch.status === "pass"))
-    .map((id) => {
-      const names: Record<string, string> = {
-        "disc-llms-txt": "llms.txt",
-        "comp-openapi": "OpenAPI spec",
-        "disc-mcp-a2a": "MCP/A2A endpoint",
-        "disc-structured-data": "Structured data",
-        "stab-security": "Security headers",
-        "trans-pricing-structured": "Machine-readable pricing",
-        "ax-mcp-functional": "MCP verified",
-      };
-      return names[id] || id;
-    })
-    .slice(0, 3);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -212,7 +189,7 @@ export default function ResultsView() {
               <button
                 onClick={handleRescan}
                 disabled={rescanning}
-                className="ml-auto pr-1 text-[11px] text-[#185FA5] font-medium hover:underline disabled:opacity-50"
+                className="ml-auto pr-4 text-[11px] text-[#185FA5] font-medium hover:underline disabled:opacity-50"
               >
                 {rescanning ? "Rescanning…" : "Rescan"}
               </button>
@@ -223,31 +200,15 @@ export default function ResultsView() {
               <span className="font-medium" style={{ color: statusColor }}>{statusLabel}</span>
             </div>
             {/* Row 4: Checks passed */}
-            <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
+            <div className="flex items-baseline py-2">
               <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Checks passed</span>
               <span className="font-medium text-foreground">{passedChecks} of {totalChecks}</span>
-            </div>
-            {/* Row 5: Key signals or Issues found */}
-            <div className="flex items-baseline py-2">
-              {greenCount >= totalCategories ? (
-                <>
-                  <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Key signals</span>
-                  <span className="font-medium text-foreground">{keySignals.join(", ") || "All checks passing"}</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Issues found</span>
-                  <span className="font-medium" style={{ color: "#DC2626" }}>
-                    {totalChecks - passedChecks} checks failed across {notReadyCount} area{notReadyCount !== 1 ? "s" : ""}
-                  </span>
-                </>
-              )}
             </div>
           </div>
         </div>
 
         {/* Part 3: Narrative */}
-        <p className="text-[15px] text-[#4B5563] leading-[1.7] mb-5">
+        <p className="text-[15px] text-[#4B5563] leading-[1.7] font-medium mb-5">
           {narrative}
         </p>
 
