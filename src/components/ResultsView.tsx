@@ -213,23 +213,27 @@ export default function ResultsView() {
         </p>
 
         {/* Part 4: Share/export toolbar */}
-        <div className="flex items-center justify-between border-t border-[#E5E7EB] py-5 text-[13px]">
-          <div className="flex items-center gap-5 text-text-secondary">
-            <button onClick={handleCopyLink} className="hover:underline cursor-pointer">
+        <div className="flex items-center justify-between pb-6 text-[13px]">
+          <div className="flex items-center gap-4 text-[#374151] font-medium">
+            <button onClick={handleCopyLink} className="hover:text-foreground cursor-pointer">
               {copied ? "✓ Copied" : "Copy URL"}
             </button>
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <span className="w-px h-[14px] bg-[#D1D5DB]" />
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
               Share on X
             </a>
-            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            <span className="w-px h-[14px] bg-[#D1D5DB]" />
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
               Share on LinkedIn
             </a>
+            <span className="w-px h-[14px] bg-[#D1D5DB]" />
             <DownloadReport slug={slug} domain={result.domain} />
+            <span className="w-px h-[14px] bg-[#D1D5DB]" />
             <a
               href={`/api/report/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:underline"
+              className="hover:text-foreground"
             >
               Export JSON
             </a>
@@ -253,8 +257,8 @@ export default function ResultsView() {
           />
         )}
 
-        {/* Section heading */}
-        <div className="pt-4 mb-6">
+        {/* Divider + section heading */}
+        <div className="border-t border-[#E5E7EB] pt-8 mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             How ready are you?
           </h2>
