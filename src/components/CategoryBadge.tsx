@@ -16,10 +16,10 @@ const DOT_COLORS: Record<Tier, string> = {
   red: "bg-[#DC2626]",
 };
 
-const SUMMARY_FAIL_COLORS: Record<Tier, string> = {
-  green: "text-[#4B5563]",
-  yellow: "text-[#CA8A04]",
-  red: "text-[#DC2626]",
+const SUMMARY_COLORS: Record<Tier, { base: string; hover: string }> = {
+  green: { base: "text-[#6B7280]", hover: "group-hover:text-[#374151]" },
+  yellow: { base: "text-[#CA8A04]", hover: "group-hover:text-[#A16207]" },
+  red: { base: "text-[#DC2626]", hover: "group-hover:text-[#B91C1C]" },
 };
 
 export default function CategoryBadge({
@@ -31,10 +31,12 @@ export default function CategoryBadge({
   expanded = false,
   onClick,
 }: CategoryBadgeProps) {
+  const summaryStyle = SUMMARY_COLORS[tier];
+
   return (
     <button
       onClick={onClick}
-      className="w-full text-left hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+      className="group w-full text-left cursor-pointer"
     >
       {/* Header row */}
       <div className="flex items-center gap-2.5">
@@ -45,14 +47,16 @@ export default function CategoryBadge({
         <span className="text-[15px] font-medium text-foreground">{label}</span>
 
         {/* Check count */}
-        <span className="text-[13px] text-[#9CA3AF]">{passCount} / {totalChecks}</span>
+        <span className="text-[13px] text-[#9CA3AF] transition-colors duration-150 group-hover:text-[#6B7280]">
+          {passCount} / {totalChecks}
+        </span>
 
         {/* Spacer */}
         <span className="flex-1" />
 
         {/* Chevron */}
         <svg
-          className={`w-4 h-4 text-[#D1D5DB] shrink-0 transition-transform duration-150 ${expanded ? "rotate-90" : ""}`}
+          className={`w-4 h-4 text-[#D1D5DB] shrink-0 transition-all duration-150 group-hover:text-[#9CA3AF] ${expanded ? "rotate-90" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2}
@@ -64,7 +68,7 @@ export default function CategoryBadge({
 
       {/* Summary line */}
       <div className="mt-1 ml-[18px]">
-        <p className={`text-[13px] leading-[1.5] ${tier === "green" ? "text-[#4B5563]" : SUMMARY_FAIL_COLORS[tier]}`}>
+        <p className={`text-[13px] leading-[1.5] transition-colors duration-150 ${summaryStyle.base} ${summaryStyle.hover}`}>
           {summary}
         </p>
       </div>

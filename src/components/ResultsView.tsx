@@ -268,7 +268,7 @@ export default function ResultsView() {
         </div>
 
         {/* Category rows — unified card */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-white mb-10">
+        <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] mb-10">
           {result.categories.map((cat, i) => (
             <div key={cat.category_id}>
               {i > 0 && <div className="border-t border-[#E5E7EB]" />}
