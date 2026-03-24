@@ -36,7 +36,7 @@ export default function DownloadReport({ slug, domain }: DownloadReportProps) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="hover:text-foreground transition-colors disabled:opacity-50"
+      className="hover:text-[#111827] hover:underline transition-colors disabled:opacity-50"
     >
       {loading ? "Generating…" : "PDF"}
     </button>

@@ -215,15 +215,15 @@ export default function ResultsView() {
         {/* Part 4: Share/export toolbar */}
         <div className="flex items-center justify-between pb-6 text-[13px]">
           <div className="flex items-center gap-4 text-[#374151] font-medium">
-            <button onClick={handleCopyLink} className="hover:text-foreground cursor-pointer">
+            <button onClick={handleCopyLink} className="hover:text-[#111827] hover:underline cursor-pointer">
               {copied ? "✓ Copied" : "Copy URL"}
             </button>
             <span className="w-px h-[14px] bg-[#D1D5DB]" />
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline">
               Share on X
             </a>
             <span className="w-px h-[14px] bg-[#D1D5DB]" />
-            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline">
               Share on LinkedIn
             </a>
             <span className="w-px h-[14px] bg-[#D1D5DB]" />
@@ -233,7 +233,7 @@ export default function ResultsView() {
               href={`/api/report/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-foreground"
+              className="hover:text-[#111827] hover:underline"
             >
               Export JSON
             </a>
@@ -258,7 +258,7 @@ export default function ResultsView() {
         )}
 
         {/* Divider + section heading */}
-        <div className="border-t border-[#E5E7EB] pt-8 mb-6">
+        <div className="mt-8 border-t border-[#E5E7EB] pt-8 mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             How ready are you?
           </h2>
@@ -304,8 +304,8 @@ export default function ResultsView() {
           ))}
         </div>
 
-        {/* Divider + action plan — Fix 2: section heading */}
-        <div className="border-t border-border pt-10 mb-12">
+        {/* Divider + action plan */}
+        <div className="mt-8 border-t border-[#E5E7EB] pt-8 mb-12">
           <ActionPlan result={result} slug={slug} />
         </div>
 
