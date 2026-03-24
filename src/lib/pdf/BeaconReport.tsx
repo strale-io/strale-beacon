@@ -220,9 +220,11 @@ export default function BeaconReport({ result, previousTiers, previousScannedAt 
         </View>
 
         {/* Narrative */}
-        <Text style={{ fontSize: 10, lineHeight: 1.6, color: COLORS.foreground, marginBottom: 20 }}>
-          {narrative}
-        </Text>
+        {narrative.map((para, i) => (
+          <Text key={i} style={{ fontSize: 10, lineHeight: 1.6, color: COLORS.foreground, marginBottom: i < narrative.length - 1 ? 8 : 20 }}>
+            {para}
+          </Text>
+        ))}
 
         {/* Summary table */}
         <View style={{ borderTopWidth: 0.5, borderTopColor: COLORS.border }}>

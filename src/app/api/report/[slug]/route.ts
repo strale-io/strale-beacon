@@ -116,7 +116,7 @@ export async function GET(
     }
   }
 
-  const narrative = generateNarrative(result);
+  const narrative = generateNarrative(result).join("\n\n");
 
   // Build the full report
   const report = {

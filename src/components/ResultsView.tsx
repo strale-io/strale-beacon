@@ -211,9 +211,16 @@ export default function ResultsView() {
         </div>
 
         {/* Part 3: Narrative */}
-        <p className="text-[15px] text-[#4B5563] leading-[1.7] font-medium mb-5">
-          {narrative}
-        </p>
+        <div className="mb-5">
+          {narrative.map((para, i) => (
+            <p
+              key={i}
+              className={`text-[15px] text-[#4B5563] leading-[1.7] font-medium text-justify${i < narrative.length - 1 ? " mb-3" : ""}`}
+            >
+              {para}
+            </p>
+          ))}
+        </div>
 
         {/* API domain suggestion banner */}
         {apiDomainSuggestion && !apiSuggestionDismissed && (

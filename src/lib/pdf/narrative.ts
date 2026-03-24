@@ -2,26 +2,47 @@ import type { ScanResult, CategoryResult, CheckResult } from "../checks/types";
 
 /**
  * Generate a detailed, finding-specific narrative from scan results.
- * References check names, real numbers, and specific discoveries.
- * Writes from the agent's perspective: what can agents DO with this product?
- * 4-8 sentences total, 1-2 per category.
+ * Returns an array of paragraphs (2-3) for visual breathing room.
+ *
+ * Paragraph 1: Opening + discoverability + comprehension (what agents find and understand)
+ * Paragraph 2: Usability + stability + agent experience + transactability (what agents can do)
+ * If only 1-2 sentences total, returns fewer paragraphs — never forces a split.
  */
-export function generateNarrative(result: ScanResult): string {
+export function generateNarrative(result: ScanResult): string[] {
   const greenCount = result.categories.filter((c) => c.tier === "green").length;
   const total = result.categories.length;
 
-  const parts: string[] = [];
-
-  // Opening — overall posture with specificity
-  parts.push(buildOpening(result.domain, greenCount, total));
-
-  // Per-category sentences — only include categories with something interesting to say
+  // Collect per-category sentences keyed by category_id
+  const catSentences: Record<string, string> = {};
   for (const cat of result.categories) {
     const sentence = buildCategorySentence(cat, result.domain);
-    if (sentence) parts.push(sentence);
+    if (sentence) catSentences[cat.category_id] = sentence;
   }
 
-  return parts.join(" ");
+  const opening = buildOpening(result.domain, greenCount, total);
+
+  // Group 1: discovery + comprehension (what agents can find and understand)
+  const group1: string[] = [];
+  for (const id of ["discoverability", "comprehension"]) {
+    if (catSentences[id]) group1.push(catSentences[id]);
+  }
+
+  // Group 2: usability, stability, agent experience, transactability (what agents can do)
+  const group2: string[] = [];
+  for (const id of ["usability", "stability", "agent-experience", "agent_experience", "transactability"]) {
+    if (catSentences[id]) group2.push(catSentences[id]);
+  }
+
+  // Build paragraphs — don't force splits on short narratives
+  const para1 = [opening, ...group1].join(" ");
+
+  if (group2.length === 0) {
+    // Very short narrative — single paragraph is fine
+    return [para1];
+  }
+
+  const para2 = group2.join(" ");
+  return [para1, para2];
 }
 
 function buildOpening(domain: string, greenCount: number, total: number): string {
