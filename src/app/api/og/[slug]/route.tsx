@@ -6,9 +6,9 @@ import type { Tier } from "@/lib/checks/types";
 export const runtime = "edge";
 
 const TIER_CONFIG: Record<Tier, { label: string; bg: string; text: string; dot: string }> = {
-  green: { label: "Ready", bg: "#F0FDF4", text: "#15803D", dot: "#16A34A" },
-  yellow: { label: "Partial", bg: "#FEFCE8", text: "#A16207", dot: "#CA8A04" },
-  red: { label: "Not Ready", bg: "#FEF2F2", text: "#B91C1C", dot: "#DC2626" },
+  green: { label: "Ready", bg: "#F0FDF4", text: "#15803D", dot: "#15803D" },
+  yellow: { label: "Partial", bg: "#FEFCE8", text: "#B45309", dot: "#B45309" },
+  red: { label: "Not Ready", bg: "#FEF2F2", text: "#B91C1C", dot: "#B91C1C" },
 };
 
 export async function GET(

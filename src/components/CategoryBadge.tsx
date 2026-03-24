@@ -11,15 +11,15 @@ interface CategoryBadgeProps {
 }
 
 const DOT_COLORS: Record<Tier, string> = {
-  green: "bg-[#16A34A]",
-  yellow: "bg-[#CA8A04]",
-  red: "bg-[#DC2626]",
+  green: "bg-[#15803D]",
+  yellow: "bg-[#B45309]",
+  red: "bg-[#B91C1C]",
 };
 
 const SUMMARY_COLORS: Record<Tier, { base: string; hover: string }> = {
   green: { base: "text-[#6B7280]", hover: "group-hover:text-[#374151]" },
-  yellow: { base: "text-[#92400E]", hover: "group-hover:text-[#78350F]" },
-  red: { base: "text-[#991B1B]", hover: "group-hover:text-[#7F1D1D]" },
+  yellow: { base: "text-[#B45309]", hover: "group-hover:text-[#92400E]" },
+  red: { base: "text-[#B91C1C]", hover: "group-hover:text-[#991B1B]" },
 };
 
 export default function CategoryBadge({

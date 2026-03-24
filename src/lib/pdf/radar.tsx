@@ -17,9 +17,9 @@ const TIER_VALUES: Record<Tier, number> = {
 };
 
 const TIER_COLORS: Record<Tier, string> = {
-  green: "#16A34A",
-  yellow: "#CA8A04",
-  red: "#DC2626",
+  green: "#15803D",
+  yellow: "#B45309",
+  red: "#B91C1C",
 };
 
 const CHART_SIZE = 220;

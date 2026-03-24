@@ -151,9 +151,9 @@ export default function ResultsView() {
     greenCount >= 2 ? "Partially agent-ready" :
     "Not agent-ready";
   const statusColor =
-    greenCount >= totalCategories ? "#16A34A" :
-    greenCount >= 2 ? "#CA8A04" :
-    "#DC2626";
+    greenCount >= totalCategories ? "#15803D" :
+    greenCount >= 2 ? "#B45309" :
+    "#B91C1C";
 
   return (
     <div className="min-h-screen flex flex-col">

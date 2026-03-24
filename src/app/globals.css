@@ -34,15 +34,15 @@
   --interactive-hover: #1F2937;
 
   /* Tier colors — the only non-greyscale in the system */
-  --tier-green: #16A34A;
+  --tier-green: #15803D;
   --tier-green-light: #F0FDF4;
   --tier-green-border: #BBF7D0;
   --tier-green-text: #15803D;
-  --tier-yellow: #CA8A04;
+  --tier-yellow: #B45309;
   --tier-yellow-light: #FEFCE8;
   --tier-yellow-border: #FEF08A;
-  --tier-yellow-text: #A16207;
-  --tier-red: #DC2626;
+  --tier-yellow-text: #B45309;
+  --tier-red: #B91C1C;
   --tier-red-light: #FEF2F2;
   --tier-red-border: #FECACA;
   --tier-red-text: #B91C1C;

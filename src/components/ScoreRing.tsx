@@ -11,9 +11,9 @@ function getTier(ready: number, total: number): "green" | "yellow" | "red" {
 }
 
 const TIER_STYLES = {
-  green: { border: "#16A34A", bg: "#F0FDF4", text: "#16A34A" },
-  yellow: { border: "#CA8A04", bg: "#FEFCE8", text: "#CA8A04" },
-  red: { border: "#DC2626", bg: "#FEF2F2", text: "#DC2626" },
+  green: { border: "#15803D", bg: "#F0FDF4", text: "#15803D" },
+  yellow: { border: "#B45309", bg: "#FEFCE8", text: "#B45309" },
+  red: { border: "#B91C1C", bg: "#FEF2F2", text: "#B91C1C" },
 };
 
 export default function ScoreRing({ ready, total, size = 130 }: ScoreRingProps) {

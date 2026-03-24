@@ -69,7 +69,7 @@ Each category: Green (Ready), Yellow (Partial), Red (Not Ready). No aggregate sc
 - Font: Inter (same as Strale), JetBrains Mono for code
 - Same spacing scale as Strale (4px base)
 - Brand color: Strale primary (hsl 225 42% 52%) adapted for light-mode contrast
-- Tier colors: Green (#16A34A), Yellow (#CA8A04), Red (#DC2626)
+- Tier colors: Green (#15803D), Amber (#B45309), Red (#B91C1C)
 - Radar chart is the signature visual — design it with care
 - Minimal decoration, data-forward layout
 - Border radius: 0.5rem (same as Strale)
