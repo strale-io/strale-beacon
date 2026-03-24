@@ -48,7 +48,6 @@ function StatusCodePill({ status, error }: { status: number | null; error?: stri
   );
 }
 
-/** Capitalize first letter of each sentence */
 function capitalizeSentences(text: string): string {
   return text
     .replace(/^([a-z])/, (_, c: string) => c.toUpperCase())
@@ -103,8 +102,9 @@ function FixBlockSection({ fix }: { fix: FixBlock }) {
       </button>
 
       {expanded && (
-        <div className="mt-2 pl-3 border-l-2 border-[#E5E7EB] space-y-3">
-          <div>
+        <div className="mt-2 space-y-3">
+          {/* Pattern 3: methodology border — fix explanation */}
+          <div className="border-l-2 border-[#D1D5DB] pl-[14px] py-2">
             <p className="text-[13px] font-medium text-foreground">{fix.what}</p>
             <p className="text-[13px] text-[#6B7280] mt-0.5">{fix.why}</p>
           </div>
@@ -122,10 +122,13 @@ function FixBlockSection({ fix }: { fix: FixBlock }) {
             </div>
           )}
 
+          {/* Pattern 2: evidence — verify command */}
           {fix.verification && (
             <div>
               <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">Verify</p>
-              <pre className="text-[12px] bg-[#F9FAFB] text-foreground p-2 rounded overflow-x-auto font-mono">{fix.verification}</pre>
+              <div className="bg-[#F3F4F6] rounded-md px-[14px] py-[10px]">
+                <pre className="text-[12px] text-[#4B5563] overflow-x-auto font-mono">{fix.verification}</pre>
+              </div>
             </div>
           )}
         </div>
@@ -164,13 +167,12 @@ export default function CheckDetail({ check }: CheckDetailProps) {
           )}
         </div>
 
-        {/* Plain text finding — no inline code blocks */}
         <p className="mt-0.5 text-[14px] text-[#4B5563] leading-[1.5]">{finding}</p>
 
-        {/* Recommendation as blue callout */}
+        {/* Pattern 1: Blue = Action — recommendation callout */}
         {check.recommendation && (
-          <div className="mt-2 border-l-2 border-[#185FA5] bg-[#EFF6FF] px-3 py-2 rounded-r">
-            <p className="text-[13px] text-[#374151]">
+          <div className="mt-2 border-l-2 border-[#185FA5] bg-[#EFF6FF] px-4 py-3">
+            <p className="text-[13px] text-[#1E3A5F] leading-[1.5]">
               {capitalizeSentences(check.recommendation)}
             </p>
           </div>
@@ -201,12 +203,16 @@ export default function CheckDetail({ check }: CheckDetailProps) {
             </button>
 
             {showDetails && (
-              <div className="mt-2 pl-3 border-l-2 border-[#E5E7EB]">
+              <div className="mt-2 space-y-3">
+                {/* Pattern 3: Gray border = Methodology */}
                 {check.detectionMethod && (
-                  <p className="text-[13px] text-[#6B7280] leading-[1.6] mb-2">
-                    {capitalizeSentences(check.detectionMethod)}
-                  </p>
+                  <div className="border-l-2 border-[#D1D5DB] pl-[14px] py-2">
+                    <p className="text-[13px] text-[#6B7280] leading-[1.6]">
+                      {capitalizeSentences(check.detectionMethod)}
+                    </p>
+                  </div>
                 )}
+                {/* Pattern 2: Gray bg = Evidence — URLs probed */}
                 {hasProbes && (
                   <div>
                     <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">
@@ -248,6 +254,7 @@ export function CategoryProbeSummary({ checks }: { checks: CheckResult[] }) {
       <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-2">
         All URLs probed in this category ({uniqueProbes.length})
       </p>
+      {/* Pattern 2: Gray bg = Evidence */}
       <div className="bg-[#F3F4F6] rounded-md px-[14px] py-[10px]">
         {uniqueProbes.map((probe, i) => (
           <div key={i} className="flex items-center gap-2 text-[12px] font-mono leading-[2]">
