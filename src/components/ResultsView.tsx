@@ -213,7 +213,7 @@ export default function ResultsView() {
         </p>
 
         {/* Part 4: Share/export toolbar */}
-        <div className="flex items-center justify-between pb-6 text-[13px]">
+        <div className="flex items-center justify-between mb-8 text-[13px]">
           <div className="flex items-center gap-4 text-[#374151] font-medium">
             <button onClick={handleCopyLink} className="hover:text-[#111827] hover:underline cursor-pointer">
               {copied ? "✓ Copied" : "Copy URL"}
@@ -258,7 +258,7 @@ export default function ResultsView() {
         )}
 
         {/* Divider + section heading */}
-        <div className="mt-8 border-t border-[#E5E7EB] pt-8 mb-6">
+        <div className="border-t border-[#E5E7EB] pt-8 mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             How ready are you?
           </h2>
@@ -268,7 +268,7 @@ export default function ResultsView() {
         </div>
 
         {/* 5. Category rows — Fix 5: each in a card */}
-        <div className="space-y-3 mb-12">
+        <div className="space-y-3 mb-8">
           {result.categories.map((cat) => (
             <div key={cat.category_id}>
               <div className="rounded-lg border border-[#E5E7EB] bg-white">
@@ -305,7 +305,7 @@ export default function ResultsView() {
         </div>
 
         {/* Divider + action plan */}
-        <div className="mt-8 border-t border-[#E5E7EB] pt-8 mb-12">
+        <div className="border-t border-[#E5E7EB] pt-8 mb-8">
           <ActionPlan result={result} slug={slug} />
         </div>
 
