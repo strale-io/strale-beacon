@@ -32,6 +32,9 @@ export interface DbSubscriber {
   email: string;
   domain_id: string | null;
   subscribed_at: string;
+  previous_green_count: number | null;
+  last_notified_at: string | null;
+  unsubscribed_at: string | null;
 }
 
 // --- Client ---
@@ -242,6 +245,7 @@ export async function fetchPreviousScan(
 
 /**
  * Subscribe an email for scan change notifications.
+ * @deprecated Use the subscribe API route directly — it handles domain lookup and green_count.
  */
 export async function subscribeEmail(
   email: string,
@@ -258,7 +262,6 @@ export async function subscribeEmail(
 
   if (error) {
     if (error.code === "23505") {
-      // Unique constraint violation — already subscribed
       return { success: true, alreadySubscribed: true };
     }
     console.error("Subscribe error:", error);

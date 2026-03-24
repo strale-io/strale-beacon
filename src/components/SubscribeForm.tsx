@@ -8,7 +8,7 @@ interface SubscribeFormProps {
 
 export default function SubscribeForm({ domain }: SubscribeFormProps) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "already" | "error">("idle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,9 +18,14 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), domain }),
       });
-      setStatus(response.ok ? "success" : "error");
+      if (response.ok) {
+        const data = await response.json();
+        setStatus(data.alreadySubscribed ? "already" : "success");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
@@ -33,7 +38,20 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
           Stay in the loop
         </h2>
         <p className="mt-4 text-[14px] text-[#15803D]">
-          We&apos;ll email you when we detect changes to {domain}&apos;s agent-readiness.
+          You&apos;ll get an email when your score changes.
+        </p>
+      </div>
+    );
+  }
+
+  if (status === "already") {
+    return (
+      <div>
+        <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
+          Stay in the loop
+        </h2>
+        <p className="mt-4 text-[14px] text-text-secondary">
+          You&apos;re already subscribed for this domain.
         </p>
       </div>
     );
