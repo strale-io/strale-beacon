@@ -29,7 +29,7 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
   if (status === "success") {
     return (
       <div>
-        <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+        <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
           Stay in the loop
         </h2>
         <p className="mt-4 text-[14px] text-[#15803D]">
@@ -41,13 +41,13 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
 
   return (
     <div>
-      <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+      <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
         Stay in the loop
       </h2>
       <p className="mt-2 text-lg text-text-secondary mb-5">
         Get notified when your score changes.
       </p>
-      <form onSubmit={handleSubmit} className="flex items-center gap-2.5">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:items-center gap-2.5">
         <input
           type="email"
           value={email}
@@ -55,7 +55,7 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
           placeholder="you@company.com"
           required
           disabled={status === "submitting"}
-          className="max-w-[400px] flex-1 px-3 py-2 text-[13px] rounded-md border border-[#D1D5DB] bg-white text-foreground placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50"
+          className="sm:max-w-[400px] flex-1 px-3 py-2 text-[13px] rounded-md border border-[#D1D5DB] bg-white text-foreground placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50"
         />
         <button
           type="submit"

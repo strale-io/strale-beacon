@@ -43,7 +43,7 @@ export default function ActionPlan({ result, slug }: ActionPlanProps) {
 
   return (
     <div>
-      <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+      <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
         {isPerfect ? "Why agents trust you" : "Where agents get stuck"}
       </h2>
       <p className="mt-2 text-lg text-text-secondary mb-6">
@@ -93,7 +93,7 @@ export default function ActionPlan({ result, slug }: ActionPlanProps) {
           </ol>
 
           {/* AI fix callout — below action items */}
-          <div className="flex items-center justify-between bg-[#F9FAFB] rounded-lg px-4 py-3 mt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-[#F9FAFB] rounded-lg px-4 py-3 mt-6">
             <div>
               <p className="text-[13px] font-medium text-foreground">Using an AI coding tool?</p>
               <p className="text-[13px] text-text-secondary">
@@ -105,7 +105,7 @@ export default function ActionPlan({ result, slug }: ActionPlanProps) {
                 href={jsonUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[13px] text-[#185FA5] font-medium hover:underline whitespace-nowrap ml-6"
+                className="text-[13px] text-[#185FA5] font-medium hover:underline whitespace-nowrap"
               >
                 Export JSON
               </a>

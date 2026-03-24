@@ -90,7 +90,7 @@ export default function ResultsView() {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 w-full max-w-[880px] mx-auto px-8 py-8">
+        <main className="flex-1 w-full max-w-[880px] mx-auto px-4 sm:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 w-48 bg-muted rounded mx-auto mb-2" />
             <div className="h-4 w-64 bg-muted rounded mx-auto mb-8" />
@@ -162,11 +162,10 @@ export default function ResultsView() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      {/* Fix 1: max-w-3xl (48rem/768px) matches strale.dev content page width */}
-      <main className="flex-1 w-full max-w-[880px] mx-auto px-8 py-8">
+      <main className="flex-1 w-full max-w-[880px] mx-auto px-4 sm:px-8 py-8">
         {/* Part 1: Heading + subheading — canonical heading style from "How ready are you?" */}
         <div className="mb-8">
-          <h1 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+          <h1 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
             Agent-readiness report
           </h1>
           <p className="mt-2 text-lg text-text-secondary">
@@ -175,17 +174,17 @@ export default function ResultsView() {
         </div>
 
         {/* Part 2: Score ring + summary table */}
-        <div className="flex gap-10 mb-7 items-center">
+        <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 mb-7 items-center">
           <ScoreRing ready={greenCount} total={totalCategories} size={130} />
-          <div className="flex-1 min-w-0 text-[13px]">
+          <div className="flex-1 min-w-0 w-full text-[13px]">
             {/* Row 1: Site */}
             <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
-              <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Site</span>
-              <span className="font-medium text-foreground">{result.domain}</span>
+              <span className="w-[120px] sm:w-[180px] flex-shrink-0 text-text-secondary font-medium">Site</span>
+              <span className="font-medium text-foreground truncate">{result.domain}</span>
             </div>
             {/* Row 2: Scanned */}
             <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
-              <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Scanned</span>
+              <span className="w-[120px] sm:w-[180px] flex-shrink-0 text-text-secondary font-medium">Scanned</span>
               <span className="font-medium text-foreground">
                 {scannedDate}
                 <button
@@ -199,12 +198,12 @@ export default function ResultsView() {
             </div>
             {/* Row 3: Status */}
             <div className="flex items-baseline py-2 border-b border-[#E5E7EB]">
-              <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Status</span>
+              <span className="w-[120px] sm:w-[180px] flex-shrink-0 text-text-secondary font-medium">Status</span>
               <span className="font-medium" style={{ color: statusColor }}>{statusLabel}</span>
             </div>
             {/* Row 4: Checks passed */}
             <div className="flex items-baseline py-2">
-              <span className="w-[180px] flex-shrink-0 text-text-secondary font-medium">Checks passed</span>
+              <span className="w-[120px] sm:w-[180px] flex-shrink-0 text-text-secondary font-medium">Checks passed</span>
               <span className="font-medium text-foreground">{passedChecks} of {totalChecks}</span>
             </div>
           </div>
@@ -252,27 +251,27 @@ export default function ResultsView() {
         )}
 
         {/* Part 4: Share/export toolbar */}
-        <div className="flex items-center justify-between mb-[50px] text-[13px]">
-          <div className="flex items-center gap-4 text-[#374151] font-medium">
-            <button onClick={handleCopyLink} className="hover:text-[#111827] hover:underline cursor-pointer">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-[50px] text-[13px]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[#374151] font-medium">
+            <button onClick={handleCopyLink} className="hover:text-[#111827] hover:underline cursor-pointer py-1">
               {copied ? "✓ Copied" : "Copy URL"}
             </button>
-            <span className="w-px h-[14px] bg-[#D1D5DB]" />
-            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline">
+            <span className="w-px h-[14px] bg-[#D1D5DB] hidden sm:block" />
+            <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline py-1">
               Share on X
             </a>
-            <span className="w-px h-[14px] bg-[#D1D5DB]" />
-            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline">
+            <span className="w-px h-[14px] bg-[#D1D5DB] hidden sm:block" />
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] hover:underline py-1">
               Share on LinkedIn
             </a>
-            <span className="w-px h-[14px] bg-[#D1D5DB]" />
+            <span className="w-px h-[14px] bg-[#D1D5DB] hidden sm:block" />
             <DownloadReport slug={slug} domain={result.domain} />
-            <span className="w-px h-[14px] bg-[#D1D5DB]" />
+            <span className="w-px h-[14px] bg-[#D1D5DB] hidden sm:block" />
             <a
               href={`/api/report/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[#111827] hover:underline"
+              className="hover:text-[#111827] hover:underline py-1"
             >
               Export JSON
             </a>
@@ -281,7 +280,7 @@ export default function ResultsView() {
             href="https://strale.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap"
+            className="text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap text-center sm:text-left"
           >
             Visit Strale →
           </a>
@@ -298,7 +297,7 @@ export default function ResultsView() {
 
         {/* Divider + section heading */}
         <div className="border-t border-[#E5E7EB] pt-[50px] mb-6">
-          <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+          <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
             What agents see
           </h2>
           <p className="mt-2 text-lg text-text-secondary">
@@ -318,7 +317,7 @@ export default function ResultsView() {
             return (
             <div key={cat.category_id}>
               {i > 0 && <div className="border-t border-[#E5E7EB]" />}
-              <div className={`px-5 py-4 relative transition-[outline-color] duration-75 outline outline-1 -outline-offset-1 outline-transparent hover:outline-[#D1D5DB] hover:z-10 ${radius}`}>
+              <div className={`px-3 sm:px-5 py-4 relative transition-[outline-color] duration-75 outline outline-1 -outline-offset-1 outline-transparent hover:outline-[#D1D5DB] hover:z-10 ${radius}`}>
                 <CategoryBadge
                   label={cat.label}
                   tier={cat.tier}
@@ -335,8 +334,8 @@ export default function ResultsView() {
               </div>
 
               {expandedCategory === cat.category_id && (
-                <div className="border-t border-[#E5E7EB] px-5 py-3 bg-white">
-                  <div className="ml-[24px]">
+                <div className="border-t border-[#E5E7EB] px-3 sm:px-5 py-3 bg-white">
+                  <div className="sm:ml-[24px]">
                     {cat.checks.map((check) => (
                       <CheckDetail key={check.check_id} check={check} />
                     ))}
@@ -361,14 +360,14 @@ export default function ResultsView() {
 
         {/* Divider + Strale CTA */}
         <div className="border-t border-[#E5E7EB] pt-[50px] mb-[50px]">
-          <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+          <h2 className="text-[1.5rem] sm:text-[1.875rem] font-normal tracking-[-0.02em] leading-[1.8rem] sm:leading-[2.25rem] text-foreground">
             Let agents do more
           </h2>
           <p className="mt-2 text-lg text-text-secondary">
             <span className="text-[#185FA5]">Beacon</span> shows you what agents see. <span className="text-[#185FA5]">Strale</span> is where they act.
           </p>
 
-          <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6 flex items-center justify-between gap-6">
+          <div className="mt-5 bg-[#F9FAFB] rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
             <div className="min-w-0">
               <p className="text-[15px] font-medium text-foreground mb-2">
                 Strale — trust and quality infrastructure for AI agents
@@ -381,7 +380,7 @@ export default function ResultsView() {
               href="https://strale.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-shrink-0 text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap"
+              className="flex-shrink-0 text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap text-center"
             >
               Visit Strale →
             </a>

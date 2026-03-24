@@ -24,7 +24,7 @@ export default function AboutPage() {
       <main className="flex-1 w-full max-w-[640px] mx-auto px-6 sm:px-8 py-16 sm:py-20">
 
         {/* What is Beacon? */}
-        <h1 className="text-[32px] font-semibold text-foreground tracking-tight leading-tight">
+        <h1 className="text-[26px] sm:text-[32px] font-semibold text-foreground tracking-tight leading-tight">
           What is Beacon?
         </h1>
 
@@ -53,8 +53,8 @@ export default function AboutPage() {
 
         <div className="mt-6 space-y-3">
           {CATEGORIES.map((cat) => (
-            <div key={cat.name} className="flex gap-4">
-              <span className="text-sm font-semibold text-foreground w-[160px] flex-shrink-0 pt-0.5">
+            <div key={cat.name} className="flex flex-col sm:flex-row sm:gap-4">
+              <span className="text-sm font-semibold text-foreground sm:w-[160px] sm:flex-shrink-0 sm:pt-0.5">
                 {cat.name}
               </span>
               <span className="text-sm text-text-secondary">

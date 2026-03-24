@@ -110,7 +110,7 @@ function FixBlockSection({ fix }: { fix: FixBlock }) {
           </div>
 
           {fix.example_before && fix.example_after && (
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 min-w-0">
                 <p className="flex items-center gap-1.5 text-[11px] font-medium text-[#B91C1C] uppercase tracking-[0.04em] mb-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#B91C1C] flex-shrink-0" />

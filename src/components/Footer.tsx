@@ -1,8 +1,8 @@
 export default function Footer() {
   return (
     <footer className="w-full">
-      <div className="max-w-[880px] mx-auto px-8 pb-8">
-        <div className="flex items-center justify-between text-[13px] text-[#B0B0B0]">
+      <div className="max-w-[880px] mx-auto px-4 sm:px-8 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[13px] text-[#B0B0B0]">
           <p>
             Built by{" "}
             <a
