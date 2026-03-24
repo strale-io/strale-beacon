@@ -215,8 +215,8 @@ export default function ResultsView() {
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             How ready are you?
           </h2>
-          <p className="mt-2 text-sm text-text-secondary">
-            Five areas that determine whether AI agents can work with your product.
+          <p className="mt-2 text-lg text-text-secondary">
+            Six areas that determine whether AI agents can work with your product.
           </p>
         </div>
 
