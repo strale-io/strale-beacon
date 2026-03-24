@@ -58,26 +58,6 @@ export default function ActionPlan({ result, slug }: ActionPlanProps) {
         </p>
       ) : (
         <>
-          {/* AI fix callout */}
-          <div className="flex items-center justify-between bg-[#F9FAFB] rounded-lg px-4 py-3 mb-5">
-            <div>
-              <p className="text-[13px] font-medium text-foreground">Using an AI coding tool?</p>
-              <p className="text-[13px] text-text-secondary">
-                Export your scan results and paste them into Claude or Cursor to generate the fixes. Then rescan.
-              </p>
-            </div>
-            {jsonUrl && (
-              <a
-                href={jsonUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[13px] text-[#185FA5] font-medium hover:underline whitespace-nowrap ml-4"
-              >
-                Export JSON
-              </a>
-            )}
-          </div>
-
           <ol className="space-y-4">
             {topActions.map((action, i) => (
               <li key={action.check_id} className="flex gap-4">
@@ -111,6 +91,26 @@ export default function ActionPlan({ result, slug }: ActionPlanProps) {
               </li>
             ))}
           </ol>
+
+          {/* AI fix callout — below action items */}
+          <div className="flex items-center justify-between bg-[#F9FAFB] rounded-lg px-4 py-3 mt-6">
+            <div>
+              <p className="text-[13px] font-medium text-foreground">Using an AI coding tool?</p>
+              <p className="text-[13px] text-text-secondary">
+                Export your scan results and paste them into Claude or Cursor to generate the fixes. Then rescan.
+              </p>
+            </div>
+            {jsonUrl && (
+              <a
+                href={jsonUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[13px] text-[#185FA5] font-medium hover:underline whitespace-nowrap ml-6"
+              >
+                Export JSON
+              </a>
+            )}
+          </div>
         </>
       )}
     </div>

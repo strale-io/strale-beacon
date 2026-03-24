@@ -213,7 +213,7 @@ export default function ResultsView() {
         </p>
 
         {/* Part 4: Share/export toolbar */}
-        <div className="flex items-center justify-between mb-10 text-[13px]">
+        <div className="flex items-center justify-between mb-[50px] text-[13px]">
           <div className="flex items-center gap-4 text-[#374151] font-medium">
             <button onClick={handleCopyLink} className="hover:text-[#111827] hover:underline cursor-pointer">
               {copied ? "✓ Copied" : "Copy URL"}
@@ -258,7 +258,7 @@ export default function ResultsView() {
         )}
 
         {/* Divider + section heading */}
-        <div className="border-t border-[#E5E7EB] pt-10 mb-6">
+        <div className="border-t border-[#E5E7EB] pt-[50px] mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             What agents see
           </h2>
@@ -268,7 +268,7 @@ export default function ResultsView() {
         </div>
 
         {/* Category rows — unified card */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] mb-10">
+        <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] mb-[50px]">
           {result.categories.map((cat, i) => {
             const isFirst = i === 0;
             const isLast = i === result.categories.length - 1;
@@ -311,17 +311,17 @@ export default function ResultsView() {
         </div>
 
         {/* Divider + action plan */}
-        <div className="border-t border-[#E5E7EB] pt-10 mb-10">
+        <div className="border-t border-[#E5E7EB] pt-[50px] mb-[50px]">
           <ActionPlan result={result} slug={slug} />
         </div>
 
         {/* Divider + subscribe */}
-        <div className="border-t border-[#E5E7EB] pt-8 mb-10">
+        <div className="border-t border-[#E5E7EB] pt-[50px] mb-[50px]">
           <SubscribeForm domain={result.domain} />
         </div>
 
         {/* Divider + Strale CTA */}
-        <div className="border-t border-[#E5E7EB] pt-10 mb-10">
+        <div className="border-t border-[#E5E7EB] pt-[50px] mb-[50px]">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             Let agents do more
           </h2>
@@ -329,18 +329,20 @@ export default function ResultsView() {
             Beacon shows you what agents see. Strale is where they act.
           </p>
 
-          <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6">
-            <p className="text-[15px] font-medium text-foreground mb-2">
-              Strale — trust and quality infrastructure for AI agents
-            </p>
-            <p className="text-[14px] text-text-secondary leading-[1.6] mb-4">
-              Strale is a capability marketplace where AI agents access 250+ verified tools at runtime — company lookups, compliance checks, financial data, and more. Every capability is continuously tested and quality-scored.
-            </p>
+          <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6 flex items-center justify-between gap-6">
+            <div className="min-w-0">
+              <p className="text-[15px] font-medium text-foreground mb-2">
+                Strale — trust and quality infrastructure for AI agents
+              </p>
+              <p className="text-[14px] text-text-secondary leading-[1.6]">
+                Strale is a capability marketplace where AI agents access 250+ verified tools at runtime — company lookups, compliance checks, financial data, and more. Every capability is continuously tested and quality-scored.
+              </p>
+            </div>
             <a
               href="https://strale.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors"
+              className="flex-shrink-0 text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors whitespace-nowrap"
             >
               Visit Strale →
             </a>
@@ -348,7 +350,7 @@ export default function ResultsView() {
         </div>
 
         {/* Divider before footer */}
-        <div className="border-t border-[#E5E7EB] pt-8" />
+        <div className="border-t border-[#E5E7EB] pt-[50px]" />
       </main>
 
       <Footer />
