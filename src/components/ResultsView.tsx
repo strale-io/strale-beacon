@@ -296,8 +296,8 @@ export default function ResultsView() {
               </div>
 
               {expandedCategory === cat.category_id && (
-                <div className="border-t border-[#F3F4F6] px-5 py-4 bg-white">
-                  <div className="ml-[18px] space-y-0">
+                <div className="border-t border-[#E5E7EB] px-5 py-3 bg-white">
+                  <div className="ml-[24px]">
                     {cat.checks.map((check) => (
                       <CheckDetail key={check.check_id} check={check} />
                     ))}
