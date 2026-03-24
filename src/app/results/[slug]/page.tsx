@@ -3,7 +3,6 @@ import { fetchScanBySlug } from "@/lib/supabase";
 import { getSiteUrl } from "@/lib/url";
 import ResultsView from "@/components/ResultsView";
 
-const TIER_LABELS = { green: "Ready", yellow: "Partial", red: "Not Ready" };
 const BASE_URL = getSiteUrl();
 
 export async function generateMetadata({
@@ -26,12 +25,9 @@ export async function generateMetadata({
   const greenCount = result.categories.filter((c) => c.tier === "green").length;
   const total = result.categories.length;
 
-  const tierDescriptions = result.categories
-    .map((c) => `${c.label}: ${TIER_LABELS[c.tier]}`)
-    .join(". ");
-
   const title = `${result.domain} — Agent Readiness Report | Strale Beacon`;
-  const description = `${result.domain} scores ${greenCount}/${total} on agent readiness. See what AI agents can and can't do with this product.`;
+  const ogTitle = `${result.domain} — Agent Readiness Report`;
+  const description = `${greenCount}/${total} areas agent-ready. See the full report.`;
   const ogImageUrl = `${BASE_URL}/api/og/${slug}`;
   const pageUrl = `${BASE_URL}/results/${slug}`;
 
@@ -39,7 +35,7 @@ export async function generateMetadata({
     title,
     description,
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       type: "website",
       url: pageUrl,
@@ -55,7 +51,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: ogTitle,
       description,
       images: [ogImageUrl],
       site: "@strale_io",

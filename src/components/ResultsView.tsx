@@ -144,9 +144,19 @@ export default function ResultsView() {
   });
   const narrative = generateNarrative(result);
   const shareUrl = typeof window !== "undefined" ? window.location.href : result.url;
-  const shareText = `Just scanned ${result.domain} for agent-readiness with Strale Beacon. Here's what AI agents see 👇`;
-  const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+
+  // X (Twitter) share text — short, factual, no branding
+  const xShareText =
+    greenCount >= totalCategories - 1
+      ? `${result.domain} — fully agent-ready. ${greenCount}/${totalCategories} areas ready.`
+      : greenCount >= 1
+        ? `${result.domain} — ${greenCount}/${totalCategories} areas agent-ready, room to improve.`
+        : `${result.domain} — not set up for AI agents yet. Full report:`;
+  const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(xShareText)}&url=${encodeURIComponent(shareUrl)}`;
+
+  // LinkedIn share text — slightly longer
+  const linkedinShareText = `I scanned ${result.domain} for AI agent readiness — ${greenCount}/${totalCategories} areas ready. The report shows what agents can and can't do with the product, with specific fixes for each gap.`;
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&summary=${encodeURIComponent(linkedinShareText)}`;
 
   // Status label + color
   const statusLabel =

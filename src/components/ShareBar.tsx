@@ -17,7 +17,12 @@ export default function ShareBar({
 }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
 
-  const shareText = `Just scanned ${productName} for agent-readiness with Strale Beacon. Here's what AI agents see 👇`;
+  const shareText =
+    greenCount >= totalCategories - 1
+      ? `${productName} — fully agent-ready. ${greenCount}/${totalCategories} areas ready.`
+      : greenCount >= 1
+        ? `${productName} — ${greenCount}/${totalCategories} areas agent-ready, room to improve.`
+        : `${productName} — not set up for AI agents yet. Full report:`;
   const shareUrl = typeof window !== "undefined" ? window.location.href : url;
 
   const handleCopy = async () => {
