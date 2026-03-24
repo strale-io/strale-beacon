@@ -64,7 +64,9 @@ export default function ScanFeed({
   }
 
   const completedCount = revealedCount;
-  const progressPct = totalChecks > 0 ? Math.round((completedCount / totalChecks) * 100) : 0;
+  // Use actual result count as denominator once results arrive; fall back to estimate
+  const effectiveTotal = results.length > 0 ? results.length : totalChecks;
+  const progressPct = effectiveTotal > 0 ? Math.round((completedCount / effectiveTotal) * 100) : 0;
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -72,7 +74,7 @@ export default function ScanFeed({
       <div className="mb-4">
         <div className="flex justify-between text-xs text-text-muted mb-1.5">
           <span>Scanning...</span>
-          <span>{completedCount}/{totalChecks} checks</span>
+          <span>{completedCount} {completedCount === 1 ? "check" : "checks"} complete</span>
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div
