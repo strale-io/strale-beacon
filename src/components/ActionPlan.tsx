@@ -45,8 +45,8 @@ export default function ActionPlan({ result }: ActionPlanProps) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold text-foreground mb-1">What to fix first</h2>
-      <p className="text-sm text-text-secondary mb-6">
+      <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">What to fix first</h2>
+      <p className="mt-2 text-lg text-text-secondary mb-6">
         Highest-impact, lowest-effort fixes to improve your agent-readiness.
       </p>
 

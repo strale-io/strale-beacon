@@ -184,59 +184,59 @@ export default function ResultsView() {
 
       {/* Fix 1: max-w-3xl (48rem/768px) matches strale.dev content page width */}
       <main className="flex-1 w-full max-w-3xl mx-auto px-8 py-8">
-        {/* Part 1: Heading + subheading */}
+        {/* Part 1: Heading + subheading — canonical heading style from "How ready are you?" */}
         <div className="mb-8">
-          <h1 className="text-[22px] font-medium text-foreground tracking-[-0.02em]">
+          <h1 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
             Agent-readiness report
           </h1>
-          <p className="mt-1 text-[14px] text-text-secondary leading-[1.5]">
+          <p className="mt-2 text-lg text-text-secondary">
             How AI agents experience your product — from discovery to transaction.
           </p>
         </div>
 
         {/* Part 2: Score ring + summary table */}
-        <div className="flex gap-7 mb-7">
-          <ScoreRing ready={greenCount} total={totalCategories} size={100} />
+        <div className="flex gap-7 mb-7 items-start">
+          <ScoreRing ready={greenCount} total={totalCategories} size={130} />
           <div className="flex-1 min-w-0 text-[13px]">
             {/* Row 1: Site */}
-            <div className="flex items-baseline py-2.5 border-b border-[#F3F4F6]">
-              <span className="w-[120px] flex-shrink-0 text-text-secondary">Site</span>
+            <div className="flex items-baseline py-[5px] border-b border-[#E5E7EB]">
+              <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Site</span>
               <span className="font-medium text-foreground font-mono">{result.domain}</span>
             </div>
             {/* Row 2: Scanned */}
-            <div className="flex items-baseline py-2.5 border-b border-[#F3F4F6]">
-              <span className="w-[120px] flex-shrink-0 text-text-secondary">Scanned</span>
-              <span className="font-medium text-foreground">
+            <div className="flex items-baseline py-[5px] border-b border-[#E5E7EB]">
+              <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Scanned</span>
+              <span className="font-medium text-foreground flex-1">
                 {scannedDate}
-                <button
-                  onClick={handleRescan}
-                  disabled={rescanning}
-                  className="ml-2 text-[#185FA5] font-medium hover:underline disabled:opacity-50"
-                >
-                  {rescanning ? "Rescanning…" : "Rescan"}
-                </button>
               </span>
+              <button
+                onClick={handleRescan}
+                disabled={rescanning}
+                className="ml-auto text-[11px] text-[#185FA5] font-medium hover:underline disabled:opacity-50"
+              >
+                {rescanning ? "Rescanning…" : "Rescan"}
+              </button>
             </div>
             {/* Row 3: Status */}
-            <div className="flex items-baseline py-2.5 border-b border-[#F3F4F6]">
-              <span className="w-[120px] flex-shrink-0 text-text-secondary">Status</span>
+            <div className="flex items-baseline py-[5px] border-b border-[#E5E7EB]">
+              <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Status</span>
               <span className="font-medium" style={{ color: statusColor }}>{statusLabel}</span>
             </div>
             {/* Row 4: Checks passed */}
-            <div className="flex items-baseline py-2.5 border-b border-[#F3F4F6]">
-              <span className="w-[120px] flex-shrink-0 text-text-secondary">Checks passed</span>
+            <div className="flex items-baseline py-[5px] border-b border-[#E5E7EB]">
+              <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Checks passed</span>
               <span className="font-medium text-foreground">{passedChecks} of {totalChecks}</span>
             </div>
             {/* Row 5: Key signals or Issues found */}
-            <div className="flex items-baseline py-2.5">
+            <div className="flex items-baseline py-[5px]">
               {greenCount >= totalCategories ? (
                 <>
-                  <span className="w-[120px] flex-shrink-0 text-text-secondary">Key signals</span>
+                  <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Key signals</span>
                   <span className="font-medium text-foreground">{keySignals.join(", ") || "All checks passing"}</span>
                 </>
               ) : (
                 <>
-                  <span className="w-[120px] flex-shrink-0 text-text-secondary">Issues found</span>
+                  <span className="w-[150px] flex-shrink-0 text-text-secondary font-medium">Issues found</span>
                   <span className="font-medium" style={{ color: "#DC2626" }}>
                     {totalChecks - passedChecks} checks failed across {notReadyCount} area{notReadyCount !== 1 ? "s" : ""}
                   </span>
