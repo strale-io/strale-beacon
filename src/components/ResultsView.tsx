@@ -315,11 +315,40 @@ export default function ResultsView() {
           <ActionPlan result={result} slug={slug} />
         </div>
 
-        {/* Subscribe — compact */}
-        <div className="mb-8">
+        {/* Divider + subscribe */}
+        <div className="border-t border-[#E5E7EB] pt-8 mb-10">
           <SubscribeForm domain={result.domain} />
         </div>
 
+        {/* Divider + Strale CTA */}
+        <div className="border-t border-[#E5E7EB] pt-10 mb-10">
+          <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+            Let agents do more
+          </h2>
+          <p className="mt-2 text-lg text-text-secondary">
+            Beacon shows you what agents see. Strale is where they act.
+          </p>
+
+          <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6">
+            <p className="text-[15px] font-medium text-foreground mb-2">
+              Strale — trust and quality infrastructure for AI agents
+            </p>
+            <p className="text-[14px] text-text-secondary leading-[1.6] mb-4">
+              Strale is a capability marketplace where AI agents access 250+ verified tools at runtime — company lookups, compliance checks, financial data, and more. Every capability is continuously tested and quality-scored.
+            </p>
+            <a
+              href="https://strale.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block text-[13px] font-medium text-white bg-[#185FA5] hover:bg-[#0C447C] px-[18px] py-2 rounded-md transition-colors"
+            >
+              Visit Strale →
+            </a>
+          </div>
+        </div>
+
+        {/* Divider before footer */}
+        <div className="border-t border-[#E5E7EB] pt-8" />
       </main>
 
       <Footer />

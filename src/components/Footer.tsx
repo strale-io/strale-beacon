@@ -1,22 +1,27 @@
 export default function Footer() {
   return (
     <footer className="w-full">
-      <div className="max-w-[1152px] mx-auto px-8 py-5">
-        <p className="text-[12px] text-[#B0B0B0] text-center">
-          Built by the team behind{" "}
+      <div className="max-w-[880px] mx-auto px-8 pb-8">
+        <div className="flex items-center justify-between text-[13px] text-[#B0B0B0]">
+          <p>
+            Built by{" "}
+            <a
+              href="https://strale.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-[#9CA3AF] transition-colors"
+            >
+              Strale
+            </a>
+            {" — trust and quality infrastructure for AI agents."}
+          </p>
           <a
-            href="https://strale.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-text-secondary transition-colors"
+            href="mailto:hello@strale.io"
+            className="hover:text-[#9CA3AF] transition-colors"
           >
-            Strale
-          </a>
-          {" — the trust layer for the agent economy. "}
-          <a href="mailto:hello@strale.io" className="hover:text-text-secondary transition-colors">
             hello@strale.io
           </a>
-        </p>
+        </div>
       </div>
     </footer>
   );

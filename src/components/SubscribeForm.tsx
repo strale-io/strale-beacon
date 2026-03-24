@@ -28,34 +28,38 @@ export default function SubscribeForm({ domain }: SubscribeFormProps) {
 
   if (status === "success") {
     return (
-      <p className="text-sm text-center text-tier-green-text">
+      <p className="text-[14px] text-[#15803D]">
         We&apos;ll email you when we detect changes to {domain}&apos;s agent-readiness.
       </p>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center justify-center gap-2 flex-wrap">
-      <span className="text-sm text-text-secondary">Get notified when your score changes:</span>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@company.com"
-        required
-        disabled={status === "submitting"}
-        className="h-8 px-3 text-sm rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50 w-48"
-      />
-      <button
-        type="submit"
-        disabled={status === "submitting"}
-        className="h-8 px-3 bg-foreground text-background text-sm font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 whitespace-nowrap"
-      >
-        {status === "submitting" ? "..." : "Notify me"}
-      </button>
-      {status === "error" && (
-        <span className="text-xs text-tier-red">Something went wrong.</span>
-      )}
-    </form>
+    <div>
+      <h3 className="text-[14px] font-medium text-foreground mb-3">
+        Get notified when your score changes
+      </h3>
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@company.com"
+          required
+          disabled={status === "submitting"}
+          className="max-w-[300px] flex-1 px-3 py-2 text-[13px] rounded-md border border-[#D1D5DB] bg-white text-foreground placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={status === "submitting"}
+          className="px-4 py-2 bg-foreground text-background text-[13px] font-medium rounded-md hover:bg-[#374151] transition-colors disabled:opacity-50 whitespace-nowrap"
+        >
+          {status === "submitting" ? "..." : "Notify me"}
+        </button>
+        {status === "error" && (
+          <span className="text-[12px] text-[#B91C1C]">Something went wrong.</span>
+        )}
+      </form>
+    </div>
   );
 }
