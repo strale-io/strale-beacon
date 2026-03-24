@@ -110,14 +110,20 @@ function FixBlockSection({ fix }: { fix: FixBlock }) {
           </div>
 
           {fix.example_before && fix.example_after && (
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div>
-                <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">Before</p>
-                <pre className="text-[12px] bg-[#FEF2F2]/50 text-foreground p-2 rounded overflow-x-auto font-mono whitespace-pre-wrap">{fix.example_before.trim()}</pre>
+            <div className="flex gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="flex items-center gap-1.5 text-[11px] font-medium text-[#B91C1C] uppercase tracking-[0.04em] mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#B91C1C] flex-shrink-0" />
+                  Before
+                </p>
+                <pre className="text-[12px] bg-[#F3F4F6] text-[#6B7280] border-l-2 border-[#B91C1C] rounded-r-md px-[14px] py-3 overflow-x-auto font-mono whitespace-pre-wrap leading-[1.7]">{fix.example_before.trim()}</pre>
               </div>
-              <div>
-                <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">After</p>
-                <pre className="text-[12px] bg-[#F0FDF4]/50 text-foreground p-2 rounded overflow-x-auto font-mono whitespace-pre-wrap">{fix.example_after.trim()}</pre>
+              <div className="flex-1 min-w-0">
+                <p className="flex items-center gap-1.5 text-[11px] font-medium text-[#15803D] uppercase tracking-[0.04em] mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] flex-shrink-0" />
+                  After
+                </p>
+                <pre className="text-[12px] bg-[#F3F4F6] text-[#4B5563] border-l-2 border-[#15803D] rounded-r-md px-[14px] py-3 overflow-x-auto font-mono whitespace-pre-wrap leading-[1.7]">{fix.example_after.trim()}</pre>
               </div>
             </div>
           )}
