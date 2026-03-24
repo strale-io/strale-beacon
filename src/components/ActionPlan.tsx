@@ -3,6 +3,7 @@ import { getActionTitle } from "@/lib/checks/summaries";
 
 interface ActionPlanProps {
   result: ScanResult;
+  slug?: string;
 }
 
 /** Priority score: higher = do first. High impact + low effort = best. */
@@ -18,7 +19,7 @@ const EFFORT_COLORS: Record<string, string> = {
   high: "bg-tier-red-light text-tier-red-text",
 };
 
-export default function ActionPlan({ result }: ActionPlanProps) {
+export default function ActionPlan({ result, slug }: ActionPlanProps) {
   const actionItems: Array<CheckResult & { category: string; score: number }> = [];
 
   for (const cat of result.categories) {
@@ -34,21 +35,39 @@ export default function ActionPlan({ result }: ActionPlanProps) {
   const topActions = actionItems.slice(0, 5);
 
   if (topActions.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-lg font-medium text-tier-green">
-          No critical issues found — your product is well-prepared for AI agents.
-        </p>
-      </div>
-    );
+    return null;
   }
+
+  const jsonUrl = slug ? `/api/report/${slug}` : null;
 
   return (
     <div>
-      <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">What to fix first</h2>
+      <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
+        Where agents get stuck
+      </h2>
       <p className="mt-2 text-lg text-text-secondary mb-6">
-        Highest-impact, lowest-effort fixes to improve your agent-readiness.
+        The highest-impact changes to improve agent access.
       </p>
+
+      {/* AI fix callout */}
+      <div className="flex items-center justify-between bg-[#F9FAFB] rounded-lg px-4 py-3 mb-5">
+        <div>
+          <p className="text-[13px] font-medium text-foreground">Using an AI coding tool?</p>
+          <p className="text-[13px] text-text-secondary">
+            Export your scan results and paste them into Claude or Cursor to generate the fixes. Then rescan.
+          </p>
+        </div>
+        {jsonUrl && (
+          <a
+            href={jsonUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[13px] text-[#185FA5] font-medium hover:underline whitespace-nowrap ml-4"
+          >
+            Export JSON
+          </a>
+        )}
+      </div>
 
       <ol className="space-y-4">
         {topActions.map((action, i) => (
