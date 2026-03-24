@@ -18,8 +18,8 @@ const DOT_COLORS: Record<Tier, string> = {
 
 const SUMMARY_COLORS: Record<Tier, { base: string; hover: string }> = {
   green: { base: "text-[#6B7280]", hover: "group-hover:text-[#374151]" },
-  yellow: { base: "text-[#CA8A04]", hover: "group-hover:text-[#A16207]" },
-  red: { base: "text-[#DC2626]", hover: "group-hover:text-[#B91C1C]" },
+  yellow: { base: "text-[#92400E]", hover: "group-hover:text-[#78350F]" },
+  red: { base: "text-[#991B1B]", hover: "group-hover:text-[#7F1D1D]" },
 };
 
 export default function CategoryBadge({

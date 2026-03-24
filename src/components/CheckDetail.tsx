@@ -1,29 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import type { CheckResult, Probe, Confidence, FixBlock } from "@/lib/checks/types";
 
 interface CheckDetailProps {
   check: CheckResult;
 }
 
+// Muted text colors for status characters (dots stay bright in CategoryBadge)
 const STATUS_CHARS: Record<string, { char: string; color: string }> = {
   pass: { char: "✓", color: "text-[#16A34A]" },
-  warn: { char: "!", color: "text-[#CA8A04]" },
-  fail: { char: "✗", color: "text-[#DC2626]" },
+  warn: { char: "!", color: "text-[#92400E]" },
+  fail: { char: "✗", color: "text-[#991B1B]" },
 };
 
-const CONFIDENCE_LABEL: Record<Confidence, { label: string; color: string }> = {
-  high: { label: "High confidence", color: "text-[#16A34A]" },
-  medium: { label: "Medium confidence", color: "text-[#CA8A04]" },
-  low: { label: "Low confidence — keyword inference", color: "text-[#DC2626]" },
+const CONFIDENCE_LABEL: Record<Confidence, { label: string; bg: string; text: string }> = {
+  high: { label: "High confidence", bg: "bg-[#F0FDF4]", text: "text-[#166534]" },
+  medium: { label: "Medium confidence", bg: "bg-[#FFFBEB]", text: "text-[#92400E]" },
+  low: { label: "Low confidence — keyword inference", bg: "bg-[#FFFBEB]", text: "text-[#92400E]" },
 };
 
-function statusCodeColor(status: number | null): string {
-  if (!status) return "text-[#9CA3AF]";
-  if (status >= 200 && status < 300) return "text-[#16A34A]";
-  if (status >= 300 && status < 400) return "text-[#CA8A04]";
-  return "text-[#DC2626]";
+function statusCodePill(status: number | null, error?: string | null): React.JSX.Element {
+  if (!status) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-px rounded text-[11px] font-medium font-mono bg-[#FEE2E2] text-[#991B1B]">
+        {error || "failed"}
+      </span>
+    );
+  }
+  if (status >= 200 && status < 300) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-px rounded text-[11px] font-medium font-mono bg-[#DCFCE7] text-[#166534]">
+        {status}
+      </span>
+    );
+  }
+  if (status >= 300 && status < 400) {
+    return (
+      <span className="inline-flex items-center px-1.5 py-px rounded text-[11px] font-medium font-mono bg-[#DBEAFE] text-[#1E40AF]">
+        {status}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-1.5 py-px rounded text-[11px] font-medium font-mono bg-[#FEE2E2] text-[#991B1B]">
+      {status}
+    </span>
+  );
 }
 
 /** Capitalize first letter of each sentence */
@@ -33,29 +56,51 @@ function capitalizeSentences(text: string): string {
     .replace(/\. ([a-z])/g, (_, c: string) => ". " + c.toUpperCase());
 }
 
+/** Wrap technical terms (paths, URLs, identifiers) in inline code styling */
+function renderWithInlineCode(text: string): (string | React.JSX.Element)[] {
+  // Match file paths (/foo.bar), URLs (https://...), technical IDs (BearerAuth, JSON-LD, WebAPI, etc.)
+  const pattern = /(\/[\w.-]+(?:\/[\w.-]+)*|https?:\/\/[^\s,)]+|(?:BearerAuth|OAuth\s*2\.0|JSON-LD|WebAPI|APIReference|SoftwareApplication|Schema\.org|OpenAPI|Swagger|x402|MCP|A2A))/g;
+  const parts: (string | React.JSX.Element)[] = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <code key={match.index} className="bg-[#F3F4F6] text-[#374151] font-mono text-[0.9em] px-[5px] py-[2px] rounded-[3px]">
+        {match[0]}
+      </code>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : [text];
+}
+
 function ProbeRow({ probe }: { probe: Probe }) {
   return (
-    <div className="flex items-start gap-2 text-[12px] font-mono py-0.5">
+    <div className="flex items-center gap-2 text-[12px] font-mono py-0.5">
       <span className="text-[#9CA3AF] flex-shrink-0">{probe.method}</span>
-      <span className="text-foreground truncate flex-1 min-w-0">{probe.url}</span>
+      <span className="text-[#374151] truncate flex-1 min-w-0">{probe.url}</span>
       <span className="text-[#9CA3AF]">→</span>
-      {probe.status ? (
-        <span className={`flex-shrink-0 ${statusCodeColor(probe.status)}`}>
-          {probe.status}
-        </span>
-      ) : (
-        <span className="flex-shrink-0 text-[#DC2626]">
-          {probe.error || "failed"}
-        </span>
-      )}
+      {statusCodePill(probe.status, probe.error)}
     </div>
   );
 }
 
-const EFFORT_COLORS: Record<string, string> = {
-  low: "bg-[#F0FDF4] text-[#16A34A]",
-  medium: "bg-[#FEFCE8] text-[#CA8A04]",
-  high: "bg-[#FEF2F2] text-[#DC2626]",
+const EFFORT_PILL: Record<string, string> = {
+  low: "bg-[#F0FDF4] text-[#166534]",
+  medium: "bg-[#F3F4F6] text-[#4B5563]",
+  high: "bg-[#FEE2E2] text-[#991B1B]",
+};
+
+const IMPACT_PILL: Record<string, string> = {
+  high: "bg-[#DCFCE7] text-[#166534]",
+  medium: "bg-[#F3F4F6] text-[#4B5563]",
+  low: "bg-[#F3F4F6] text-[#6B7280]",
 };
 
 function FixBlockSection({ fix }: { fix: FixBlock }) {
@@ -74,10 +119,10 @@ function FixBlockSection({ fix }: { fix: FixBlock }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
         </svg>
         How to fix
-        <span className={`ml-1 text-[10px] px-1.5 py-0.5 rounded font-medium ${EFFORT_COLORS[fix.effort]}`}>
+        <span className={`ml-1 text-[11px] px-2 py-[2px] rounded font-medium ${EFFORT_PILL[fix.effort]}`}>
           {fix.effort} effort
         </span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${EFFORT_COLORS[fix.impact === "high" ? "low" : fix.impact === "low" ? "high" : "medium"]}`}>
+        <span className={`text-[11px] px-2 py-[2px] rounded font-medium ${IMPACT_PILL[fix.impact]}`}>
           {fix.impact} impact
         </span>
       </button>
@@ -123,7 +168,7 @@ export default function CheckDetail({ check }: CheckDetailProps) {
   const finding = capitalizeSentences(check.finding || "");
 
   return (
-    <div className="py-3 flex gap-2.5 border-b border-[#F3F4F6] last:border-b-0">
+    <div className="py-3 flex gap-2.5 border-b border-[#E5E7EB] last:border-b-0">
       {/* Status character */}
       <span className={`flex-shrink-0 text-[14px] font-bold leading-[1.4] ${statusCfg.color}`}>
         {statusCfg.char}
@@ -133,23 +178,26 @@ export default function CheckDetail({ check }: CheckDetailProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="text-[14px] font-medium text-foreground">{check.name}</h4>
           {check.foundButUnrecognized && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#FEFCE8] text-[#CA8A04] font-medium">
+            <span className="text-[11px] px-2 py-[2px] rounded bg-[#FFFBEB] text-[#92400E] font-medium">
               Found but format not recognized
             </span>
           )}
           {confidenceCfg && check.confidence !== "high" && (
-            <span className={`text-[10px] ${confidenceCfg.color}`}>
+            <span className={`text-[11px] px-2 py-[2px] rounded font-medium ${confidenceCfg.bg} ${confidenceCfg.text}`}>
               {confidenceCfg.label}
             </span>
           )}
         </div>
 
-        <p className="mt-0.5 text-[14px] text-[#4B5563] leading-[1.5]">{finding}</p>
+        <p className="mt-0.5 text-[14px] text-[#4B5563] leading-[1.5]">{renderWithInlineCode(finding)}</p>
 
+        {/* Recommendation as blue callout */}
         {check.recommendation && (
-          <p className="mt-1.5 text-[13px] text-[#6B7280]">
-            → {capitalizeSentences(check.recommendation)}
-          </p>
+          <div className="mt-2 border-l-2 border-[#185FA5] bg-[#EFF6FF] px-3 py-2 rounded-r">
+            <p className="text-[13px] text-[#374151]">
+              {renderWithInlineCode(capitalizeSentences(check.recommendation))}
+            </p>
+          </div>
         )}
 
         {/* Fix block — for warn/fail checks with a fix */}
@@ -184,13 +232,15 @@ export default function CheckDetail({ check }: CheckDetailProps) {
                   </p>
                 )}
                 {hasProbes && (
-                  <div className="space-y-0">
+                  <div>
                     <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">
                       URLs probed
                     </p>
-                    {check.probes.map((probe, i) => (
-                      <ProbeRow key={i} probe={probe} />
-                    ))}
+                    <div className="bg-[#F3F4F6] rounded-md px-4 py-3">
+                      {check.probes.map((probe, i) => (
+                        <ProbeRow key={i} probe={probe} />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -207,7 +257,6 @@ export function CategoryProbeSummary({ checks }: { checks: CheckResult[] }) {
   const allProbes = checks.flatMap((c) => c.probes || []);
   if (allProbes.length === 0) return null;
 
-  // Deduplicate by URL
   const seen = new Set<string>();
   const uniqueProbes: Probe[] = [];
   for (const p of allProbes) {
@@ -220,18 +269,16 @@ export function CategoryProbeSummary({ checks }: { checks: CheckResult[] }) {
 
   return (
     <div className="mt-3 pt-3 border-t border-[#E5E7EB]">
-      <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-1">
+      <p className="text-[10px] text-[#9CA3AF] font-medium uppercase tracking-wider mb-2">
         All URLs probed in this category ({uniqueProbes.length})
       </p>
-      <div className="space-y-0">
+      <div className="bg-[#F3F4F6] rounded-md px-4 py-3">
         {uniqueProbes.map((probe, i) => (
-          <div key={i} className="flex items-center gap-2 text-[12px] font-mono py-0.5 pr-0">
+          <div key={i} className="flex items-center gap-2 text-[12px] font-mono py-0.5">
             <span className="text-[#9CA3AF]">{probe.method}</span>
-            <span className="text-foreground truncate flex-1 min-w-0">{probe.url}</span>
+            <span className="text-[#374151] truncate flex-1 min-w-0">{probe.url}</span>
             <span className="text-[#9CA3AF]">→</span>
-            <span className={statusCodeColor(probe.status)}>
-              {probe.status || probe.error || "failed"}
-            </span>
+            {statusCodePill(probe.status, probe.error)}
           </div>
         ))}
       </div>
