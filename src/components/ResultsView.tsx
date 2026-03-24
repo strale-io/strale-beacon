@@ -269,10 +269,17 @@ export default function ResultsView() {
 
         {/* Category rows — unified card */}
         <div className="rounded-lg border border-[#E5E7EB] bg-[#F9FAFB] mb-10">
-          {result.categories.map((cat, i) => (
+          {result.categories.map((cat, i) => {
+            const isFirst = i === 0;
+            const isLast = i === result.categories.length - 1;
+            const radius = isFirst && isLast ? "rounded-lg"
+              : isFirst ? "rounded-t-lg"
+              : isLast ? "rounded-b-lg"
+              : "rounded-none";
+            return (
             <div key={cat.category_id}>
               {i > 0 && <div className="border-t border-[#E5E7EB]" />}
-              <div className="px-5 py-4 relative transition-shadow duration-150 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.12)] hover:z-10 rounded-sm">
+              <div className={`px-5 py-4 relative transition-[outline-color] duration-150 outline outline-1 -outline-offset-1 outline-transparent hover:outline-[#C0C0C0] hover:z-10 ${radius}`}>
                 <CategoryBadge
                   label={cat.label}
                   tier={cat.tier}
@@ -299,7 +306,8 @@ export default function ResultsView() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Divider + action plan */}
