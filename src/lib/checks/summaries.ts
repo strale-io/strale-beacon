@@ -48,8 +48,7 @@ function discoverabilitySummary(cat: CategoryResult): string {
     if (passed(cat.checks, "mcp-a2a")) parts.push("MCP/A2A endpoints");
     if (passed(cat.checks, "structured-data")) parts.push("structured data");
     if (passed(cat.checks, "robots-ai")) parts.push("AI crawlers allowed");
-    if (parts.length === 0) return "Agents can discover this product through standard protocols.";
-    return `Agents can discover this product through ${parts.join(", ")}.`;
+    return parts.length > 0 ? `Discoverable via ${parts.join(", ")}.` : "Discoverable through standard protocols.";
   }
 
   if (cat.tier === "red") {
@@ -57,16 +56,15 @@ function discoverabilitySummary(cat: CategoryResult): string {
     if (!passed(cat.checks, "llms-txt")) missing.push("no llms.txt");
     if (!passed(cat.checks, "mcp-a2a")) missing.push("no MCP server or A2A Agent Card");
     if (!passed(cat.checks, "robots-ai")) missing.push("AI crawlers blocked");
-    return `Agents cannot discover this product — ${missing.slice(0, 2).join(" and ")}.`;
+    return `Not discoverable — ${missing.slice(0, 2).join(" and ")}.`;
   }
 
-  // Yellow — mixed
   const working: string[] = [];
   const broken: string[] = [];
   if (passed(cat.checks, "llms-txt")) working.push("llms.txt found"); else broken.push("no llms.txt");
   if (passed(cat.checks, "mcp-a2a")) working.push("MCP/A2A present"); else broken.push("no MCP/A2A");
   if (passed(cat.checks, "robots-ai")) working.push("AI crawlers allowed"); else broken.push("some crawlers blocked");
-  return `Partially discoverable: ${working[0] || "some signals present"}, but ${broken[0] || "gaps remain"}.`;
+  return `${working[0] || "Some signals present"}, but ${broken[0] || "gaps remain"}.`;
 }
 
 function comprehensionSummary(cat: CategoryResult): string {
@@ -85,7 +83,7 @@ function comprehensionSummary(cat: CategoryResult): string {
     if (docs?.status === "pass") parts.push("docs publicly accessible");
     const contentNeg = findCheck(cat.checks, "content-negotiation");
     if (contentNeg?.status === "pass") parts.push("content negotiation supported");
-    return `Agents can understand this API — ${parts.join(", ")}.`;
+    return `${parts.join(". ")}.`;
   }
 
   if (cat.tier === "red") {
@@ -117,7 +115,7 @@ function usabilitySummary(cat: CategoryResult): string {
     if (auth?.status === "pass") parts.push("authentication documented");
     if (signup?.status === "pass") parts.push("low signup friction");
     if (sandbox?.status === "pass") parts.push("sandbox/free tier available");
-    return `Agents can interact with this product — ${parts.join(", ")}.`;
+    return `${parts.join(". ")}.`;
   }
 
   if (cat.tier === "red") {
@@ -150,14 +148,14 @@ function stabilitySummary(cat: CategoryResult): string {
     if (security?.status === "pass") parts.push("security headers present");
     const freshness = findCheck(cat.checks, "content-freshness");
     if (freshness?.status === "pass") parts.push("freshness signals present");
-    return `Agents can depend on this product — ${parts.join(", ")}.`;
+    return `${parts.join(". ")}.`;
   }
 
   if (cat.tier === "red") {
     const missing: string[] = [];
     if (version?.status !== "pass") missing.push("no API versioning");
     if (changelog?.status !== "pass") missing.push("no changelog or status page");
-    return `Agents can't assess reliability — ${missing.slice(0, 2).join(" and ")}.`;
+    return `Reliability unclear — ${missing.slice(0, 2).join(" and ")}.`;
   }
 
   // Yellow
@@ -182,14 +180,14 @@ function agentExperienceSummary(cat: CategoryResult): string {
     if (firstContact?.status === "pass") parts.push("structured first-contact response");
     if (docNav?.status === "pass") parts.push("docs reachable");
     if (support?.status === "pass") parts.push("support path available");
-    return `Agents get a smooth experience — ${parts.join(", ")}.`;
+    return `${parts.join(". ")}.`;
   }
 
   if (cat.tier === "red") {
     if (firstContact?.status === "fail") {
-      return "Agents arriving at this product hit a dead end — no structured response or navigation to documentation.";
+      return "Dead end on first contact — no structured response or navigation to documentation.";
     }
-    return "Agents have a poor experience — unclear first contact and no clear path to documentation.";
+    return "Poor first impression — unclear response and no clear path to documentation.";
   }
 
   // Yellow
@@ -211,14 +209,14 @@ function transactabilitySummary(cat: CategoryResult): string {
     if (signup?.status === "pass") parts.push("self-serve signup");
     if (checkout?.status === "pass") parts.push("programmatic checkout");
     if (freeTier?.status === "pass") parts.push("free tier available");
-    return `Agents can transact with this product — ${parts.join(", ")}.`;
+    return `${parts.join(". ")}.`;
   }
 
   if (cat.tier === "red") {
     const missing: string[] = [];
     if (pricing?.status === "fail") missing.push("no machine-readable pricing");
     if (signup?.status === "fail") missing.push("no self-serve signup");
-    return `Agents can't do business here — ${missing.slice(0, 2).join(" and ")}.`;
+    return `Not transactable — ${missing.slice(0, 2).join(" and ")}.`;
   }
 
   // Yellow

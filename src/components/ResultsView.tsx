@@ -260,46 +260,44 @@ export default function ResultsView() {
         {/* Divider + section heading */}
         <div className="border-t border-[#E5E7EB] pt-10 mb-6">
           <h2 className="text-[1.875rem] font-normal tracking-[-0.02em] leading-[2.25rem] text-foreground">
-            How ready are you?
+            What agents see
           </h2>
           <p className="mt-2 text-lg text-text-secondary">
-            Six areas that determine whether AI agents can work with your product.
+            How AI agents discover, understand, and interact with your product.
           </p>
         </div>
 
-        {/* 5. Category rows — Fix 5: each in a card */}
-        <div className="space-y-3 mb-10">
-          {result.categories.map((cat) => (
+        {/* Category rows — unified card */}
+        <div className="rounded-lg border border-[#E5E7EB] bg-white mb-10">
+          {result.categories.map((cat, i) => (
             <div key={cat.category_id}>
-              <div className="rounded-lg border border-[#E5E7EB] bg-white">
-                <div className="px-5 py-4">
-                  <CategoryBadge
-                    label={cat.label}
-                    question={cat.question}
-                    tier={cat.tier}
-                    summary={categorySummary(cat)}
-                    passCount={cat.checks.filter((c) => c.status === "pass").length}
-                    totalChecks={cat.checks.length}
-                    expanded={expandedCategory === cat.category_id}
-                    onClick={() =>
-                      setExpandedCategory(
-                        expandedCategory === cat.category_id ? null : cat.category_id
-                      )
-                    }
-                  />
-                </div>
-
-                {expandedCategory === cat.category_id && (
-                  <div className="border-t border-[#F3F4F6] px-5 py-4">
-                    <div className="ml-[74px] space-y-0">
-                      {cat.checks.map((check) => (
-                        <CheckDetail key={check.check_id} check={check} />
-                      ))}
-                      <CategoryProbeSummary checks={cat.checks} />
-                    </div>
-                  </div>
-                )}
+              {i > 0 && <div className="border-t border-[#E5E7EB]" />}
+              <div className="px-5 py-4">
+                <CategoryBadge
+                  label={cat.label}
+                  tier={cat.tier}
+                  summary={categorySummary(cat)}
+                  passCount={cat.checks.filter((c) => c.status === "pass").length}
+                  totalChecks={cat.checks.length}
+                  expanded={expandedCategory === cat.category_id}
+                  onClick={() =>
+                    setExpandedCategory(
+                      expandedCategory === cat.category_id ? null : cat.category_id
+                    )
+                  }
+                />
               </div>
+
+              {expandedCategory === cat.category_id && (
+                <div className="border-t border-[#F3F4F6] px-5 py-4">
+                  <div className="ml-[18px] space-y-0">
+                    {cat.checks.map((check) => (
+                      <CheckDetail key={check.check_id} check={check} />
+                    ))}
+                    <CategoryProbeSummary checks={cat.checks} />
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

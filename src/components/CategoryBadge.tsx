@@ -2,7 +2,6 @@ import type { Tier } from "@/lib/checks/types";
 
 interface CategoryBadgeProps {
   label: string;
-  question: string;
   tier: Tier;
   summary: string;
   passCount: number;
@@ -11,15 +10,20 @@ interface CategoryBadgeProps {
   onClick?: () => void;
 }
 
-const TIER_CONFIG: Record<Tier, { label: string; bg: string; text: string }> = {
-  green: { label: "Ready", bg: "bg-tier-green-light", text: "text-tier-green-text" },
-  yellow: { label: "Partial", bg: "bg-tier-yellow-light", text: "text-tier-yellow-text" },
-  red: { label: "Not Ready", bg: "bg-tier-red-light", text: "text-tier-red-text" },
+const DOT_COLORS: Record<Tier, string> = {
+  green: "bg-[#16A34A]",
+  yellow: "bg-[#CA8A04]",
+  red: "bg-[#DC2626]",
+};
+
+const SUMMARY_FAIL_COLORS: Record<Tier, string> = {
+  green: "text-[#4B5563]",
+  yellow: "text-[#CA8A04]",
+  red: "text-[#DC2626]",
 };
 
 export default function CategoryBadge({
   label,
-  question,
   tier,
   summary,
   passCount,
@@ -27,27 +31,21 @@ export default function CategoryBadge({
   expanded = false,
   onClick,
 }: CategoryBadgeProps) {
-  const config = TIER_CONFIG[tier];
-
   return (
     <button
       onClick={onClick}
-      className="w-full text-left transition-colors"
+      className="w-full text-left hover:bg-[#F9FAFB] transition-colors cursor-pointer"
     >
       {/* Header row */}
-      <div className="flex items-center gap-3">
-        {/* Tier badge */}
-        <span
-          className={`inline-flex items-center justify-center min-w-[52px] px-2.5 py-[3px] rounded-[4px] text-[11px] font-medium ${config.bg} ${config.text}`}
-        >
-          {config.label}
-        </span>
+      <div className="flex items-center gap-2.5">
+        {/* Colored dot */}
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${DOT_COLORS[tier]}`} />
 
         {/* Category name */}
-        <span className="text-[14px] font-medium text-foreground">{label}</span>
+        <span className="text-[15px] font-medium text-foreground">{label}</span>
 
         {/* Check count */}
-        <span className="text-[12px] text-[#B0B0B0]">{passCount}/{totalChecks}</span>
+        <span className="text-[13px] text-[#9CA3AF]">{passCount} / {totalChecks}</span>
 
         {/* Spacer */}
         <span className="flex-1" />
@@ -64,10 +62,11 @@ export default function CategoryBadge({
         </svg>
       </div>
 
-      {/* Body — finding + description */}
-      <div className="mt-1.5 ml-[74px]">
-        <p className="text-[13px] text-[#4B5563] leading-[1.5]">{summary}</p>
-        <p className="text-[12px] text-[#B0B0B0] mt-0.5">{question}</p>
+      {/* Summary line */}
+      <div className="mt-1 ml-[18px]">
+        <p className={`text-[13px] leading-[1.5] ${tier === "green" ? "text-[#4B5563]" : SUMMARY_FAIL_COLORS[tier]}`}>
+          {summary}
+        </p>
       </div>
     </button>
   );
