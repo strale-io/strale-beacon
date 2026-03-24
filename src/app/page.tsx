@@ -148,12 +148,12 @@ function HomeInner() {
               onKeyDown={handleKeyDown}
               placeholder="Enter your URL"
               disabled={scanState === "scanning"}
-              className="flex-1 h-12 px-5 text-base rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:flex-1 h-12 px-5 text-base rounded-[4px] border border-border-strong bg-background text-foreground placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
               onClick={() => handleScan()}
               disabled={scanState === "scanning"}
-              className="h-12 px-8 bg-foreground text-background font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="w-full sm:w-auto h-12 px-8 bg-foreground text-background font-medium rounded-[4px] hover:bg-interactive-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {scanState === "scanning" ? "Scanning..." : "Scan"}
             </button>
