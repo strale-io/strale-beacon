@@ -326,7 +326,7 @@ export default function ResultsView() {
             Let agents do more
           </h2>
           <p className="mt-2 text-lg text-text-secondary">
-            <span className="text-foreground">Beacon</span> shows you what agents see. <span className="text-foreground">Strale</span> is where they act.
+            <span className="text-[#185FA5] italic">Beacon</span> shows you what agents see. <span className="text-[#185FA5] italic">Strale</span> is where they act.
           </p>
 
           <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6 flex items-center justify-between gap-6">
@@ -334,7 +334,7 @@ export default function ResultsView() {
               <p className="text-[15px] font-medium text-foreground mb-2">
                 Strale — trust and quality infrastructure for AI agents
               </p>
-              <p className="text-[14px] font-medium text-text-secondary leading-[1.6]">
+              <p className="text-[13px] text-text-secondary leading-[1.6]">
                 Strale is a capability marketplace where AI agents access 250+ verified tools at runtime — company lookups, compliance checks, financial data, and more. Every capability is continuously tested and quality-scored.
               </p>
             </div>
