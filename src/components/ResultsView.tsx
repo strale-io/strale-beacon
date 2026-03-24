@@ -326,7 +326,7 @@ export default function ResultsView() {
             Let agents do more
           </h2>
           <p className="mt-2 text-lg text-text-secondary">
-            <span className="text-[#185FA5] italic">Beacon</span> shows you what agents see. <span className="text-[#185FA5] italic">Strale</span> is where they act.
+            <span className="text-[#185FA5]">Beacon</span> shows you what agents see. <span className="text-[#185FA5]">Strale</span> is where they act.
           </p>
 
           <div className="mt-5 bg-[#F9FAFB] rounded-lg p-6 flex items-center justify-between gap-6">
