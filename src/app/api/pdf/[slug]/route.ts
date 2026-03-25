@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
-import { fetchScanBySlug, fetchPreviousScan, isSupabaseConfigured } from "@/lib/supabase";
-import BeaconReport from "@/lib/pdf/BeaconReport";
-import { createElement } from "react";
-import type { Tier } from "@/lib/checks/types";
+import { fetchScanBySlug, isSupabaseConfigured } from "@/lib/supabase";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium-min";
+
+const CHROMIUM_PACK =
+  "https://github.com/nickmomrik/chromium-compact/releases/download/v131.0.0/chromium-v131.0.0-pack.tar";
+
+export const maxDuration = 60; // Vercel function timeout
 
 export async function GET(
   _request: NextRequest,
@@ -20,35 +23,35 @@ export async function GET(
   }
 
   const scan = await fetchScanBySlug(slug);
-
   if (!scan) {
     return NextResponse.json({ error: "Scan not found" }, { status: 404 });
   }
 
-  // Fetch previous scan for score progression
-  let previousTiers: Record<string, Tier> | undefined;
-  let previousScannedAt: string | undefined;
-  if (scan.domain_id) {
-    const prevScan = await fetchPreviousScan(scan.domain_id, scan.id);
-    if (prevScan) {
-      previousTiers = prevScan.tier_summary as Record<string, Tier>;
-      previousScannedAt = prevScan.scanned_at;
-    }
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://scan.strale.io";
+  const reportUrl = `${baseUrl}/report/${slug}`;
 
+  let browser;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const element = createElement(BeaconReport, {
-      result: scan.results,
-      previousTiers,
-      previousScannedAt,
-    }) as any;
-    const buffer = await renderToBuffer(element);
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1200, height: 800 },
+      executablePath: await chromium.executablePath(CHROMIUM_PACK),
+      headless: true,
+    });
+
+    const page = await browser.newPage();
+    await page.goto(reportUrl, { waitUntil: "networkidle0", timeout: 30000 });
+
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "1cm", right: "1.5cm", bottom: "1.5cm", left: "1.5cm" },
+    });
 
     const domain = scan.results.domain || slug;
     const filename = `beacon-report-${domain}.pdf`;
 
-    return new NextResponse(new Uint8Array(buffer), {
+    return new NextResponse(Buffer.from(pdf), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
@@ -59,8 +62,15 @@ export async function GET(
   } catch (err) {
     console.error("PDF generation error:", err);
     return NextResponse.json(
-      { error: "Failed to generate PDF", message: err instanceof Error ? err.message : "Unknown error" },
+      {
+        error: "Failed to generate PDF",
+        message: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
