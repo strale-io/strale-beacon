@@ -238,7 +238,7 @@ export default function ResultsView() {
             style={{ animation: "fade-in-up 0.3s ease-out both" }}
           >
             <p className="text-sm text-[#1E40AF] flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#1E40AF] text-[10px] font-semibold text-[#1E40AF] flex-shrink-0 leading-none" style={{ paddingBottom: '1px' }}>i</span>
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#1E40AF] text-[10px] font-semibold text-[#1E40AF] flex-shrink-0" style={{ lineHeight: 0, paddingTop: '1.5px' }}>i</span>
               <span>We found <span className="font-medium">{apiDomainSuggestion}</span> linked from this site.{" "}
               <a
                 href={`/?url=${encodeURIComponent(apiDomainSuggestion)}`}
