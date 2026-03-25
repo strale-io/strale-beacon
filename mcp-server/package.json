@@ -1,0 +1,39 @@
+{
+  "name": "strale-beacon-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Strale Beacon — scan any URL for AI agent readiness",
+  "bin": {
+    "strale-beacon-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "ai-agents",
+    "agent-readiness",
+    "strale",
+    "beacon",
+    "llms-txt",
+    "openapi",
+    "agent-experience"
+  ],
+  "author": "Strale <hello@strale.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strale-io/strale-beacon.git",
+    "directory": "mcp-server"
+  },
+  "homepage": "https://scan.strale.io",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
