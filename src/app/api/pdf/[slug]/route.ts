@@ -5,7 +5,7 @@ import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
 
 const CHROMIUM_PACK =
-  "https://github.com/nickmomrik/chromium-compact/releases/download/v131.0.0/chromium-v131.0.0-pack.tar";
+  "https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar";
 
 export const maxDuration = 60;
 
@@ -23,16 +23,19 @@ export async function GET(
     return NextResponse.json({ error: "Database not configured" }, { status: 503 });
   }
 
-  const scan = await fetchScanBySlug(slug);
-  if (!scan) {
-    return NextResponse.json({ error: "Scan not found" }, { status: 404 });
-  }
-
-  // Render HTML string server-side — no network request needed
-  const html = renderReportHtml(scan.results);
-
+  let failedAt = "fetch-scan";
   let browser;
+
   try {
+    const scan = await fetchScanBySlug(slug);
+    if (!scan) {
+      return NextResponse.json({ error: "Scan not found" }, { status: 404 });
+    }
+
+    failedAt = "render-html";
+    const html = renderReportHtml(scan.results);
+
+    failedAt = "launch-browser";
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1200, height: 800 },
@@ -40,9 +43,11 @@ export async function GET(
       headless: true,
     });
 
+    failedAt = "set-content";
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
 
+    failedAt = "generate-pdf";
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,
@@ -61,10 +66,11 @@ export async function GET(
       },
     });
   } catch (err) {
-    console.error("PDF generation error:", err);
+    console.error(`PDF generation error at ${failedAt}:`, err);
     return NextResponse.json(
       {
         error: "Failed to generate PDF",
+        failedAt,
         message: err instanceof Error ? err.message : "Unknown error",
       },
       { status: 500 }
