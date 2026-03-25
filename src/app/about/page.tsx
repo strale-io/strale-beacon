@@ -5,6 +5,18 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "About — Strale Beacon",
   description: "What Beacon checks, how scoring works, and why agent-readiness matters.",
+  openGraph: {
+    title: "About — Strale Beacon",
+    description: "What Beacon checks, how scoring works, and why agent-readiness matters.",
+    type: "website",
+    siteName: "Strale Beacon",
+  },
+  twitter: {
+    card: "summary",
+    title: "About — Strale Beacon",
+    description: "What Beacon checks, how scoring works, and why agent-readiness matters.",
+    site: "@strale_io",
+  },
 };
 
 const CATEGORIES = [

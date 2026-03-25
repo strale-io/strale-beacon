@@ -73,6 +73,21 @@ export function detectApiDomain(
     }
   }
 
+  // 3. Proactively check for api.{brand}.{tld} variants even if not linked
+  //    Handles cases like strale.dev → api.strale.io where the TLD differs
+  const brandName = getBrandName(scannedDomain);
+  if (brandName && homepageHtml) {
+    // Look for any mention of api.{brand} in the page text
+    const apiPattern = new RegExp(`api\\.${escapeRegex(brandName)}\\.[a-z]{2,}`, "gi");
+    let match;
+    while ((match = apiPattern.exec(homepageHtml)) !== null) {
+      const hostname = match[0].toLowerCase();
+      if (hostname !== scannedDomain) {
+        candidates.set(hostname, Math.max(candidates.get(hostname) || 0, 11));
+      }
+    }
+  }
+
   if (candidates.size === 0) return null;
 
   // Pick the best candidate: prefer api.* subdomains, then highest score
@@ -95,11 +110,23 @@ function getBaseDomain(domain: string): string {
   return parts.length >= 2 ? parts.slice(-2).join(".") : domain;
 }
 
+/** Extract the brand name (e.g. "strale" from "strale.dev" or "www.strale.io") */
+function getBrandName(domain: string): string | null {
+  const parts = domain.replace(/^www\./, "").split(".");
+  return parts.length >= 2 ? parts[parts.length - 2] : null;
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function isRelatedApiDomain(hostname: string, baseDomain: string, scannedDomain: string): boolean {
   if (hostname === scannedDomain) return false;
   const candidateBase = getBaseDomain(hostname);
-  // Must share the same base domain (or be a subdomain of the scanned domain)
-  if (candidateBase !== baseDomain && !hostname.endsWith(`.${scannedDomain}`)) return false;
+  // Must share the same base domain OR same brand name with different TLD
+  // (e.g. strale.dev → api.strale.io)
+  const sameBrand = getBrandName(hostname) === getBrandName(scannedDomain);
+  if (candidateBase !== baseDomain && !hostname.endsWith(`.${scannedDomain}`) && !sameBrand) return false;
   // Must look like an API/developer domain
   return API_SUBDOMAIN_PATTERNS.some((p) => hostname.startsWith(p)) ||
     API_SUBDOMAIN_KEYWORDS.some((kw) => hostname.includes(kw));
@@ -138,4 +165,46 @@ function extractUrlsFromJson(
       extractUrlsFromJson(val, baseDomain, scannedDomain, candidates);
     }
   }
+}
+
+/**
+ * Proactively probe common API subdomain patterns for a brand.
+ * Used as a fallback when no API domain was found in page content.
+ * Tries api.{brand}.{tld} for common TLDs with a quick HEAD request.
+ */
+const COMMON_TLDS = ["io", "com", "dev"];
+const PROBE_TIMEOUT_MS = 3000;
+
+export async function probeApiDomain(scannedDomain: string): Promise<string | null> {
+  if (isApiDomain(scannedDomain)) return null;
+
+  const brand = getBrandName(scannedDomain);
+  if (!brand) return null;
+
+  // Build candidates: api.{brand}.{tld} for each common TLD
+  const candidates = COMMON_TLDS.map((tld) => `api.${brand}.${tld}`).filter(
+    (d) => d !== scannedDomain
+  );
+
+  // Probe each candidate with a quick HEAD request (race with timeout)
+  for (const candidate of candidates) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
+      const resp = await fetch(`https://${candidate}`, {
+        method: "HEAD",
+        redirect: "follow",
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (resp.ok || resp.status === 401 || resp.status === 403) {
+        // Domain exists and serves something (even if auth-gated)
+        return candidate;
+      }
+    } catch {
+      // DNS failure, timeout, or connection error — skip
+    }
+  }
+
+  return null;
 }
