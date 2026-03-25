@@ -30,6 +30,19 @@ function HomeInner() {
   const autoScanTriggered = useRef(false);
   const [recentScans, setRecentScans] = useState<Array<{ domain: string; slug: string }>>([]);
 
+  // Anonymous session ID for competitive scanning analysis (24h TTL)
+  const getSessionId = () => {
+    const key = "beacon_session";
+    let id = localStorage.getItem(key);
+    const ts = localStorage.getItem(key + "_ts");
+    if (!id || !ts || Date.now() - parseInt(ts) > 24 * 60 * 60 * 1000) {
+      id = crypto.randomUUID();
+      localStorage.setItem(key, id);
+      localStorage.setItem(key + "_ts", String(Date.now()));
+    }
+    return id;
+  };
+
   useEffect(() => {
     fetch("/api/recent")
       .then((r) => r.json())
@@ -60,7 +73,7 @@ function HomeInner() {
         const response = await fetch("/api/scan", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: candidateUrl }),
+          body: JSON.stringify({ url: candidateUrl, sessionId: getSessionId() }),
         });
 
         if (!response.ok) {

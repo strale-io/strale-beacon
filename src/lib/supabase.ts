@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import type { ScanResult, Tier } from "./checks/types";
+import type { ScanResult, ScanContext, Tier } from "./checks/types";
+import { extractIntelligence, computeCheckDiff, type ScanIntelligence } from "./intelligence";
 
 // --- Database types ---
 
@@ -142,12 +143,13 @@ export async function findRecentScan(
 }
 
 /**
- * Store a scan result. Returns the slug.
+ * Store a scan result with intelligence data. Returns the slug.
  */
 export async function storeScan(
   domainId: string,
   domain: string,
-  result: ScanResult
+  result: ScanResult,
+  context?: ScanContext
 ): Promise<string> {
   const slug = domainToSlug(domain);
 
@@ -163,44 +165,57 @@ export async function storeScan(
     else redCount++;
   }
 
-  // Check if slug already exists
+  // Extract intelligence if context available
+  let intel: ScanIntelligence | null = null;
+  if (context) {
+    intel = extractIntelligence(result, context);
+  }
+
+  // Check if slug already exists (rescan)
   const { data: existingScan } = await supabase
     .from("scans")
-    .select("id")
+    .select("id, failed_checks")
     .eq("slug", slug)
     .single();
 
+  // Compute fix tracking diff on rescan
+  let checkDiff = { checks_fixed: [] as string[], checks_regressed: [] as string[] };
+  if (existingScan && intel) {
+    const prevFailed = (existingScan as { failed_checks: string[] | null }).failed_checks;
+    checkDiff = computeCheckDiff(prevFailed, intel.failed_checks);
+  }
+
+  const intelColumns = intel ? {
+    product_category: intel.product_category,
+    tech_stack: intel.tech_stack,
+    has_strale_integration: intel.has_strale_integration,
+    failed_checks: intel.failed_checks,
+    capability_gaps: intel.capability_gaps,
+    checks_fixed: checkDiff.checks_fixed,
+    checks_regressed: checkDiff.checks_regressed,
+  } : {};
+
+  const basePayload = {
+    scanned_at: result.scanned_at,
+    scan_version: result.scan_version,
+    scan_duration_ms: result.scan_duration_ms,
+    results: result as unknown as Record<string, unknown>,
+    tier_summary: tierSummary,
+    green_count: greenCount,
+    yellow_count: yellowCount,
+    red_count: redCount,
+    ...intelColumns,
+  };
+
   if (existingScan) {
-    // Update existing scan with new results
     await supabase
       .from("scans")
-      .update({
-        scanned_at: result.scanned_at,
-        scan_version: result.scan_version,
-        scan_duration_ms: result.scan_duration_ms,
-        results: result as unknown as Record<string, unknown>,
-        tier_summary: tierSummary,
-        green_count: greenCount,
-        yellow_count: yellowCount,
-        red_count: redCount,
-      })
+      .update(basePayload)
       .eq("id", (existingScan as { id: string }).id);
   } else {
-    // Insert new scan
     await supabase
       .from("scans")
-      .insert({
-        domain_id: domainId,
-        slug,
-        scanned_at: result.scanned_at,
-        scan_version: result.scan_version,
-        scan_duration_ms: result.scan_duration_ms,
-        results: result as unknown as Record<string, unknown>,
-        tier_summary: tierSummary,
-        green_count: greenCount,
-        yellow_count: yellowCount,
-        red_count: redCount,
-      });
+      .insert({ domain_id: domainId, slug, ...basePayload });
   }
 
   return slug;
@@ -241,6 +256,17 @@ export async function fetchPreviousScan(
     .single();
 
   return (data as DbScan) || null;
+}
+
+/**
+ * Record a scan session for competitive scanning analysis.
+ */
+export async function recordScanSession(
+  sessionId: string,
+  domain: string
+): Promise<void> {
+  if (!isSupabaseConfigured() || !sessionId) return;
+  await supabase.from("scan_sessions").insert({ session_id: sessionId, domain });
 }
 
 /**

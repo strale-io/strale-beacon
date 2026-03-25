@@ -7,13 +7,14 @@ import {
   upsertDomain,
   findRecentScan,
   storeScan,
+  recordScanSession,
   isSupabaseConfigured,
 } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url, force } = body;
+    const { url, force, sessionId } = body;
 
     if (!url || typeof url !== "string") {
       return NextResponse.json(
@@ -102,7 +103,11 @@ export async function POST(request: NextRequest) {
       try {
         const domainRow = await upsertDomain(domain);
         if (domainRow) {
-          finalSlug = await storeScan(domainRow.id, domain, result);
+          finalSlug = await storeScan(domainRow.id, domain, result, context);
+        }
+        // Record scan session for competitive analysis
+        if (sessionId && typeof sessionId === "string") {
+          recordScanSession(sessionId, domain).catch(() => {});
         }
       } catch (err) {
         // Log but don't fail the scan — persistence is best-effort

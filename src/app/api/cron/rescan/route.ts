@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, isSupabaseConfigured, domainToSlug } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, domainToSlug, storeScan } from "@/lib/supabase";
 import { runScan } from "@/lib/checks/runner";
 import { sendScoreChangeEmail } from "@/lib/email/send";
 import { signUnsubscribeToken } from "@/lib/email/tokens";
-import type { Tier } from "@/lib/checks/types";
 
 const MAX_DOMAINS_PER_RUN = 50;
 
@@ -67,46 +66,15 @@ export async function GET(request: NextRequest) {
   for (const entry of domains) {
     try {
       // Run a fresh scan
-      const { result } = await runScan(`https://${entry.domain}`);
+      const { result, context } = await runScan(`https://${entry.domain}`);
       scannedCount++;
 
       const newGreenCount = result.categories.filter((c) => c.tier === "green").length;
       const total = result.categories.length;
       const slug = domainToSlug(entry.domain);
 
-      // Store the scan result
-      const tierSummary: Record<string, Tier> = {};
-      let gc = 0, yc = 0, rc = 0;
-      for (const cat of result.categories) {
-        tierSummary[cat.category_id] = cat.tier;
-        if (cat.tier === "green") gc++;
-        else if (cat.tier === "yellow") yc++;
-        else rc++;
-      }
-
-      // Update or insert scan
-      const { data: existingScan } = await supabase
-        .from("scans")
-        .select("id")
-        .eq("slug", slug)
-        .single();
-
-      const scanPayload = {
-        scanned_at: result.scanned_at,
-        scan_version: result.scan_version,
-        scan_duration_ms: result.scan_duration_ms,
-        results: result as unknown as Record<string, unknown>,
-        tier_summary: tierSummary,
-        green_count: gc,
-        yellow_count: yc,
-        red_count: rc,
-      };
-
-      if (existingScan) {
-        await supabase.from("scans").update(scanPayload).eq("id", existingScan.id);
-      } else {
-        await supabase.from("scans").insert({ ...scanPayload, domain_id: entry.domainId, slug });
-      }
+      // Store scan with intelligence data
+      await storeScan(entry.domainId, entry.domain, result, context);
 
       // Update domain's last_scanned_at
       await supabase
