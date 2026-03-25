@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchScanBySlug, isSupabaseConfigured } from "@/lib/supabase";
+import { renderReportHtml } from "@/lib/pdf/render-html";
 import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium-min";
 
 const CHROMIUM_PACK =
   "https://github.com/nickmomrik/chromium-compact/releases/download/v131.0.0/chromium-v131.0.0-pack.tar";
 
-export const maxDuration = 60; // Vercel function timeout
+export const maxDuration = 60;
 
 export async function GET(
   _request: NextRequest,
@@ -27,8 +28,8 @@ export async function GET(
     return NextResponse.json({ error: "Scan not found" }, { status: 404 });
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://scan.strale.io";
-  const reportUrl = `${baseUrl}/report/${slug}`;
+  // Render HTML string server-side — no network request needed
+  const html = renderReportHtml(scan.results);
 
   let browser;
   try {
@@ -40,7 +41,7 @@ export async function GET(
     });
 
     const page = await browser.newPage();
-    await page.goto(reportUrl, { waitUntil: "networkidle0", timeout: 30000 });
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdf = await page.pdf({
       format: "A4",
