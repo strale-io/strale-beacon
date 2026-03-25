@@ -237,8 +237,9 @@ export default function ResultsView() {
             className="mb-5 flex items-center justify-between gap-3 rounded-md border border-[#BFDBFE] bg-[#EFF6FF] px-4 py-3"
             style={{ animation: "fade-in-up 0.3s ease-out both" }}
           >
-            <p className="text-sm text-[#1E40AF]">
-              ℹ️ We found <span className="font-medium">{apiDomainSuggestion}</span> linked from this site.{" "}
+            <p className="text-sm text-[#1E40AF] flex items-center gap-2">
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-[#1E40AF] text-[11px] font-semibold text-[#1E40AF] flex-shrink-0 leading-none">i</span>
+              <span>We found <span className="font-medium">{apiDomainSuggestion}</span> linked from this site.{" "}
               <a
                 href={`/?url=${encodeURIComponent(apiDomainSuggestion)}`}
                 onClick={(e) => {
@@ -248,7 +249,7 @@ export default function ResultsView() {
                 className="font-medium underline underline-offset-2 hover:text-[#1E3A8A]"
               >
                 Scan that instead →
-              </a>
+              </a></span>
             </p>
             <button
               onClick={() => setApiSuggestionDismissed(true)}
