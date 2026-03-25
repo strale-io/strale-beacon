@@ -374,19 +374,39 @@ export async function checkFreeTierDetection(ctx: ScanContext, check: CheckDefin
     } catch { /* ignore */ }
   }
 
-  // 2. Check pricing page for free tier text
-  const pricingPaths = ["/pricing", "/plans"];
-  for (const path of pricingPaths) {
+  // 2. Check pricing pages for JSON Schema.org data with free offers (API domains)
+  const pricingPathsJson = ["/pricing", "/plans"];
+  for (const path of pricingPathsJson) {
     const url = ctx.baseUrl + path;
-    let pageHtml = ctx.fetchedPages.get(url);
-    if (!pageHtml) {
+    let body = ctx.fetchedPages.get(url);
+    if (!body) {
       const result = await beaconFetch(url);
       probes.push(toProbe(result));
       if (result.ok) {
-        pageHtml = result.body;
+        body = result.body;
         ctx.fetchedPages.set(url, result.body);
+        ctx.fetchedHeaders.set(url, result.headers);
       }
     }
+    if (body) {
+      // Try parsing as raw JSON (API domains serve JSON directly, no <script> tags)
+      try {
+        const parsed = JSON.parse(body);
+        const str = JSON.stringify(parsed);
+        const hasSchemaType = /"@type"/i.test(str);
+        const hasFreePrice = /"price"\s*:\s*"0(\.0+)?"/.test(str) || /"price"\s*:\s*0/.test(str);
+        if (hasSchemaType && hasFreePrice) {
+          signals.push(`Schema.org structured data with free offer (price $0) found at ${path}`);
+        }
+      } catch { /* not JSON — fall through to text scanning */ }
+    }
+  }
+
+  // 3. Check pricing page for free tier text (HTML pages)
+  const pricingPathsText = ["/pricing", "/plans"];
+  for (const path of pricingPathsText) {
+    const url = ctx.baseUrl + path;
+    const pageHtml = ctx.fetchedPages.get(url);
     if (pageHtml) {
       if (/free\s+tier|free\s+plan|starter\s+plan.*free|always\s+free|\$0|€0|£0|no\s+credit\s+card/i.test(pageHtml)) {
         softSignals.push(`Free tier indicators found on ${path}`);
@@ -397,7 +417,7 @@ export async function checkFreeTierDetection(ctx: ScanContext, check: CheckDefin
     }
   }
 
-  // 3. Check OpenAPI for sandbox/test servers
+  // 4. Check OpenAPI for sandbox/test servers
   if (ctx.openapiSpec) {
     const spec = ctx.openapiSpec as Record<string, unknown>;
     const servers = spec.servers as Array<{ url?: string; description?: string }> | undefined;
@@ -410,7 +430,7 @@ export async function checkFreeTierDetection(ctx: ScanContext, check: CheckDefin
     }
   }
 
-  // 4. Check root API response
+  // 5. Check root API response
   if (ctx.domainType === "api" && ctx.homepageHtml) {
     try {
       const json = JSON.parse(ctx.homepageHtml);

@@ -1069,7 +1069,7 @@ categories:
         check_type: "free_tier_detection"
         weight: "low"
         description: "Whether a free tier, trial, or sandbox is available for agent evaluation"
-        how_we_check: "We check for Schema.org Offer with price 0, free/trial mentions in pricing pages, sandbox server URLs in OpenAPI specs, and freemium indicators in API responses."
+        how_we_check: "We check for Schema.org Offer with price 0, free/trial mentions in pricing pages, sandbox server URLs in OpenAPI specs, and freemium indicators in API responses. For API domains returning JSON at /pricing, we also check the JSON body directly for Schema.org Offer types with price 0."
         recommendation: "Offer a free tier, free trial, or sandbox environment that agents can use to evaluate your product before committing to payment."
         fix:
           what: "Create a free tier, trial period, or sandbox environment"
