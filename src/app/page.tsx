@@ -28,6 +28,14 @@ function HomeInner() {
   const [totalChecks, setTotalChecks] = useState(20);
   const inputRef = useRef<HTMLInputElement>(null);
   const autoScanTriggered = useRef(false);
+  const [recentScans, setRecentScans] = useState<Array<{ domain: string; slug: string }>>([]);
+
+  useEffect(() => {
+    fetch("/api/recent")
+      .then((r) => r.json())
+      .then((data) => setRecentScans(data))
+      .catch(() => {});
+  }, []);
 
   const handleScan = async (overrideUrl?: string) => {
     const inputValue = overrideUrl || url;
@@ -172,6 +180,24 @@ function HomeInner() {
             </button>
           )}
         </div>
+
+        {/* Recently scanned */}
+        {scanState === "idle" && recentScans.length > 0 && (
+          <p className="mt-4 text-[13px] text-text-muted text-center">
+            Recently scanned:{" "}
+            {recentScans.map((s, i) => (
+              <span key={s.slug}>
+                {i > 0 && " · "}
+                <a
+                  href={`/results/${s.slug}`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {s.domain}
+                </a>
+              </span>
+            ))}
+          </p>
+        )}
 
         {/* Scan feed */}
         {scanState === "scanning" && (
