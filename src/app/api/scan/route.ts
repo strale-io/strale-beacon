@@ -65,10 +65,20 @@ export async function POST(request: NextRequest) {
     if (!force && isSupabaseConfigured()) {
       const cached = await findRecentScan(domain);
       if (cached) {
+        // Still run API domain detection on cached results
+        let cachedSuggestion = detectApiDomain(
+          cached.results.domain,
+          undefined, // no HTML available for cached results
+          undefined,
+        );
+        if (!cachedSuggestion) {
+          cachedSuggestion = await probeApiDomain(cached.results.domain);
+        }
         return NextResponse.json({
           ...cached.results,
           slug: cached.slug,
           cached: true,
+          ...(cachedSuggestion ? { apiDomainSuggestion: cachedSuggestion } : {}),
         });
       }
     }

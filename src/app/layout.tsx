@@ -7,12 +7,12 @@ const BASE_URL = getSiteUrl();
 export const metadata: Metadata = {
   title: "Strale Beacon — Is your product ready for AI agents?",
   description:
-    "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
+    "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 32 checks across 6 categories.",
   metadataBase: new URL(BASE_URL),
   openGraph: {
     title: "Strale Beacon — Is your product ready for AI agents?",
     description:
-      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
+      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 32 checks across 6 categories.",
     type: "website",
     url: BASE_URL,
     siteName: "Strale Beacon",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Strale Beacon — Is your product ready for AI agents?",
     description:
-      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 25 checks across 5 categories.",
+      "Free agent-readiness scanner. See what AI agents can discover, understand, and do with your product. 32 checks across 6 categories.",
     site: "@strale_io",
   },
   icons: {

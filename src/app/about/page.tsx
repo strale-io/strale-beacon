@@ -52,7 +52,7 @@ export default function AboutPage() {
             data that tells an agent what the product does or how to use it.
           </p>
           <p>
-            Beacon tells you exactly where you stand — and how to fix it. It runs 25 automated
+            Beacon tells you exactly where you stand — and how to fix it. It runs 32 automated
             checks across 6 categories and produces a detailed report with specific, actionable
             remediation steps.
           </p>
@@ -87,7 +87,7 @@ export default function AboutPage() {
             <span className="inline-flex items-center gap-1 text-sm font-medium text-tier-green-text bg-tier-green-light px-1.5 py-0.5 rounded">Ready</span>,{" "}
             <span className="inline-flex items-center gap-1 text-sm font-medium text-tier-yellow-text bg-tier-yellow-light px-1.5 py-0.5 rounded">Partial</span>, or{" "}
             <span className="inline-flex items-center gap-1 text-sm font-medium text-tier-red-text bg-tier-red-light px-1.5 py-0.5 rounded">Not Ready</span>.
-            There is no aggregate score — the five independent assessments give you a clear
+            There is no aggregate score — the six independent assessments give you a clear
             picture of where to focus.
           </p>
           <p>
