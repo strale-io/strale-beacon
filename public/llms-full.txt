@@ -1,0 +1,90 @@
+# Strale Beacon
+
+> Free agent-readiness scanner. 32 automated checks across 6 categories. Scan any URL and see what AI agents can discover, understand, and do with your product.
+
+Strale Beacon scans publicly accessible URLs and produces detailed agent-readiness reports. It checks for llms.txt, OpenAPI specs, MCP endpoints, A2A agent cards, structured data, authentication documentation, and 26 other signals that AI agents look for.
+
+## Scan API
+
+POST https://scan.strale.io/api/scan
+Content-Type: application/json
+{"url": "https://example.com"}
+
+Returns a full scan result with per-category assessments (Discoverability, Comprehension, Usability, Stability, Agent Experience, Transactability), individual check results with probe evidence, and prioritised fix recommendations.
+
+## Report API
+
+GET https://scan.strale.io/api/report/{slug}
+
+Returns a structured JSON report for a previously scanned domain. The slug is the domain with dots replaced by hyphens (e.g. api-strale-io). The JSON includes LLM instructions for automated remediation.
+
+## MCP Server
+
+Install: npx -y strale-beacon-mcp
+
+Tools:
+- scan: Scan a URL for agent readiness
+- get_report: Get a full structured report for a domain
+- list_checks: List all 32 checks across 6 categories
+
+## Categories
+
+- Discoverability: llms.txt, robots.txt AI crawler policy, structured data, sitemap, MCP/A2A endpoints
+- Comprehension: OpenAPI spec, API documentation, endpoint completeness, schema drift, machine-readable pricing, content negotiation
+- Usability: Authentication docs, signup friction, sandbox/test environment, error response quality, SDK availability
+- Stability: API versioning, changelog, rate limits, terms of service, security headers, content freshness
+- Agent Experience: First-contact response, documentation navigability, response consistency, support paths, MCP/A2A verification
+- Transactability: Machine-readable pricing, self-serve provisioning, agent-compatible checkout, usage/billing transparency, free tier
+
+## All Checks
+
+### Discoverability
+- disc-llms-txt: Checks /llms.txt for structured capability information
+- disc-ai-crawler-policy: Checks robots.txt for AI crawler policies (GPTBot, ClaudeBot, etc.)
+- disc-structured-data: Checks for Schema.org JSON-LD with relevant types
+- disc-sitemap: Checks sitemap.xml for developer-facing pages
+- disc-mcp-a2a: Checks /.well-known/mcp.json and /.well-known/agent.json
+
+### Comprehension
+- comp-openapi: Checks for OpenAPI/Swagger spec at standard paths
+- comp-api-docs: Checks for publicly accessible API documentation
+- comp-endpoint-completeness: Analyzes OpenAPI spec completeness
+- comp-schema-drift: Compares live API responses to OpenAPI spec
+- comp-machine-pricing: Checks for machine-readable pricing data
+- comp-content-negotiation: Tests Accept header content negotiation
+
+### Usability
+- use-auth-docs: Checks for authentication documentation
+- use-signup-friction: Assesses signup process friction
+- use-sandbox: Checks for sandbox/test environment
+- use-error-quality: Tests API error response quality
+- use-sdk: Checks for SDK and framework integration references
+
+### Stability
+- stab-versioning: Checks for API versioning signals
+- stab-changelog-status: Checks for changelog and status page
+- stab-rate-limits: Checks for rate limit documentation and headers
+- stab-tos-agents: Checks ToS for agent/bot compatibility
+- stab-security: Checks security headers
+- stab-content-freshness: Checks content freshness signals
+
+### Agent Experience
+- ax-first-contact: Tests API root response quality
+- ax-doc-navigability: Checks documentation link accessibility
+- ax-response-consistency: Tests response format consistency
+- ax-support-paths: Checks for machine-readable support paths
+- ax-mcp-functional: Functional verification of MCP/A2A endpoints
+
+### Transactability
+- trans-pricing-structured: Checks for machine-readable pricing
+- trans-self-serve-signup: Checks for self-serve account provisioning
+- trans-checkout-flow: Checks for agent-compatible checkout flows
+- trans-usage-billing: Checks for usage/billing transparency in API responses
+- trans-free-tier: Checks for free tier or trial availability
+
+## Built by
+
+Strale — trust and quality infrastructure for AI agents.
+Website: https://strale.dev
+API: https://api.strale.io
+Contact: hello@strale.io

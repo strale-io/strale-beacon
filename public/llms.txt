@@ -1,37 +1,44 @@
 # Strale Beacon
 
-> Free agent-readiness scanner for SaaS products and APIs
+> Free agent-readiness scanner. 32 automated checks across 6 categories. Scan any URL and see what AI agents can discover, understand, and do with your product.
 
-Strale Beacon scans any URL and assesses how ready it is for AI agent discovery and interaction. It checks 20 signals across 5 categories: Discoverability, Comprehension, Usability, Stability, and Agent Experience.
+Strale Beacon scans publicly accessible URLs and produces detailed agent-readiness reports. It checks for llms.txt, OpenAPI specs, MCP endpoints, A2A agent cards, structured data, authentication documentation, and 26 other signals that AI agents look for.
 
-Each category receives a tier: Green (Ready), Yellow (Partial), or Red (Not Ready). There is no aggregate score.
+## Scan API
 
-## API
+POST https://scan.strale.io/api/scan
+Content-Type: application/json
+{"url": "https://example.com"}
 
-- Scan endpoint: POST https://scan.strale.io/api/scan
-  - Input: { "url": "https://example.com" }
-  - Output: Structured scan results with per-category tiers (green/yellow/red)
-  - Caching: Results are cached for 1 hour per domain. Pass { "force": true } to bypass cache.
+Returns a full scan result with per-category assessments (Discoverability, Comprehension, Usability, Stability, Agent Experience, Transactability), individual check results with probe evidence, and prioritised fix recommendations.
 
-- Results endpoint: GET https://scan.strale.io/api/results/{slug}
-  - Output: Full scan results for a previously scanned domain
-  - Slug format: domain with dots replaced by hyphens (e.g., "stripe-com")
+## Report API
 
-- Subscribe endpoint: POST https://scan.strale.io/api/subscribe
-  - Input: { "email": "user@example.com" }
-  - Output: Subscription confirmation for score change notifications
+GET https://scan.strale.io/api/report/{slug}
+
+Returns a structured JSON report for a previously scanned domain. The slug is the domain with dots replaced by hyphens (e.g. api-strale-io). The JSON includes LLM instructions for automated remediation.
+
+## MCP Server
+
+Install: npx -y strale-beacon-mcp
+
+Tools:
+- scan: Scan a URL for agent readiness
+- get_report: Get a full structured report for a domain
+- list_checks: List all 32 checks across 6 categories
 
 ## Categories
 
-1. Discoverability — Can agents find you? (llms.txt, robots.txt AI crawler policy, structured data, sitemap, MCP/A2A endpoints)
-2. Comprehension — Can agents understand what you do? (OpenAPI spec, API docs accessibility, endpoint completeness, machine-readable pricing)
-3. Usability — Can agents interact with you? (auth documentation, signup friction, sandbox availability, error response quality, SDK availability)
-4. Stability — Can agents depend on you? (API versioning, changelog/status, rate limits, ToS agent compatibility, security headers)
-5. Agent Experience — What happens when an agent shows up? (first-contact response, doc navigability, response consistency, support paths)
+- Discoverability: llms.txt, robots.txt AI crawler policy, structured data, sitemap, MCP/A2A endpoints
+- Comprehension: OpenAPI spec, API documentation, endpoint completeness, schema drift, machine-readable pricing, content negotiation
+- Usability: Authentication docs, signup friction, sandbox/test environment, error response quality, SDK availability
+- Stability: API versioning, changelog, rate limits, terms of service, security headers, content freshness
+- Agent Experience: First-contact response, documentation navigability, response consistency, support paths, MCP/A2A verification
+- Transactability: Machine-readable pricing, self-serve provisioning, agent-compatible checkout, usage/billing transparency, free tier
 
-## Links
+## Built by
 
-- Landing page: https://scan.strale.io
-- Built by Strale: https://strale.dev
-- Strale marketplace: https://strale.dev
-- Contact: hello@strale.io
+Strale — trust and quality infrastructure for AI agents.
+Website: https://strale.dev
+API: https://api.strale.io
+Contact: hello@strale.io
