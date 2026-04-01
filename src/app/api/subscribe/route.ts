@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase, supabaseAdmin } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { error } = await supabase.from("subscribers").insert({
+    const { error } = await supabaseAdmin.from("subscribers").insert({
       email,
       domain_id: domainId,
       previous_green_count: greenCount,

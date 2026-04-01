@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase";
 import { verifyUnsubscribeToken } from "@/lib/email/tokens";
 
 export async function GET(request: NextRequest) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Set unsubscribed_at
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("subscribers")
     .update({ unsubscribed_at: new Date().toISOString() })
     .eq("email", payload.email)

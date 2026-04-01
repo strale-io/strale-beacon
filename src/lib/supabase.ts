@@ -38,10 +38,11 @@ export interface DbSubscriber {
   unsubscribed_at: string | null;
 }
 
-// --- Client ---
+// --- Clients ---
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(
@@ -49,9 +50,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+/** Anon client — for public reads (SELECT allowed by RLS). */
 export const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",
   supabaseAnonKey || "placeholder"
+);
+
+/** Service-role client — for writes (INSERT/UPDATE require service_role in RLS). */
+export const supabaseAdmin = createClient(
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseServiceKey || supabaseAnonKey || "placeholder"
 );
 
 /**
@@ -99,7 +107,7 @@ export async function upsertDomain(domain: string): Promise<DbDomain | null> {
     .single();
 
   if (existing) {
-    const { data: updated } = await supabase
+    const { data: updated } = await supabaseAdmin
       .from("domains")
       .update({
         last_scanned_at: new Date().toISOString(),
@@ -112,7 +120,7 @@ export async function upsertDomain(domain: string): Promise<DbDomain | null> {
   }
 
   // Insert new
-  const { data: inserted } = await supabase
+  const { data: inserted } = await supabaseAdmin
     .from("domains")
     .insert({ domain })
     .select()
@@ -208,12 +216,12 @@ export async function storeScan(
   };
 
   if (existingScan) {
-    await supabase
+    await supabaseAdmin
       .from("scans")
       .update(basePayload)
       .eq("id", (existingScan as { id: string }).id);
   } else {
-    await supabase
+    await supabaseAdmin
       .from("scans")
       .insert({ domain_id: domainId, slug, ...basePayload });
   }
@@ -266,7 +274,7 @@ export async function recordScanSession(
   domain: string
 ): Promise<void> {
   if (!isSupabaseConfigured() || !sessionId) return;
-  await supabase.from("scan_sessions").insert({ session_id: sessionId, domain });
+  await supabaseAdmin.from("scan_sessions").insert({ session_id: sessionId, domain });
 }
 
 /**
@@ -281,7 +289,7 @@ export async function subscribeEmail(
     return { success: false };
   }
 
-  const { error } = await supabase.from("subscribers").insert({
+  const { error } = await supabaseAdmin.from("subscribers").insert({
     email,
     domain_id: domainId || null,
   });

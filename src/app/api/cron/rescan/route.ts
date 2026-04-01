@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase, isSupabaseConfigured, domainToSlug, storeScan } from "@/lib/supabase";
+import { supabase, supabaseAdmin, isSupabaseConfigured, domainToSlug, storeScan } from "@/lib/supabase";
 import { runScan } from "@/lib/checks/runner";
 import { sendScoreChangeEmail } from "@/lib/email/send";
 import { signUnsubscribeToken } from "@/lib/email/tokens";
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       await storeScan(entry.domainId, entry.domain, result, context);
 
       // Update domain's last_scanned_at
-      await supabase
+      await supabaseAdmin
         .from("domains")
         .update({ last_scanned_at: new Date().toISOString() })
         .eq("id", entry.domainId);
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
         // If no previous score stored, just set it and move on
         if (oldGreenCount === null) {
-          await supabase
+          await supabaseAdmin
             .from("subscribers")
             .update({ previous_green_count: newGreenCount })
             .eq("id", sub.id);
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
         if (sent) {
           emailsSent++;
           // Update subscriber
-          await supabase
+          await supabaseAdmin
             .from("subscribers")
             .update({
               previous_green_count: newGreenCount,
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       // Update subscribers who had no change — still update their previous_green_count
       for (const sub of entry.subscribers) {
         if (sub.previousGreenCount !== null && sub.previousGreenCount === newGreenCount) {
-          await supabase
+          await supabaseAdmin
             .from("subscribers")
             .update({ previous_green_count: newGreenCount })
             .eq("id", sub.id);
